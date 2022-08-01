@@ -1,12 +1,19 @@
-TITLE Program Template     (template.asm)
+TITLE Project 6 - String Primitives and Macros      (Proj6_iwanekm.asm)
 
-; Author: 
-; Last Modified:
-; OSU email address: ONID_ID@oregonstate.edu
-; Course number/section:   CS271 Section ???
-; Project Number:                 Due Date:
-; Description: This file is provided as a template from which you may work
-;              when developing assembly projects in CS271.
+;--------------------------------------------------------------------------------------------------------------------------------------------------
+; Author:					Michael Iwanek
+; Last Modified:			08/01/2022
+; OSU email address:		iwanekm@oregonstate.edu
+; Course number/section:	CS271 Section 400
+; Project Number:			06
+; Due Date:					08/07/2022
+;--------------------------------------------------------------------------------------------------------------------------------------------------
+; Description: 
+;--------------------------------------------------------------------------------------------------------------------------------------------------
+;			-This program 
+
+;--------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 INCLUDE Irvine32.inc
 

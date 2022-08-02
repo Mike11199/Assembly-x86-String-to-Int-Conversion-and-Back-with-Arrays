@@ -82,6 +82,7 @@ ReadVal PROC
 	;***************************************************************************************************************************
 
 	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD
+	PUSHAD
 
 	mov eax, [EBP + 12]
 	mov StringRef, eax
@@ -235,13 +236,8 @@ _storeNumtoArray:
 	add eax, 5			;test delete to add num
 	call writeint		; test to show added num
 
+	POPAD
 	RET 32		; dereference 1 passed parameter address
-
-
-
-
-
-
 
 
 ReadVal ENDP

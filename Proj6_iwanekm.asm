@@ -42,6 +42,7 @@ program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program
 					BYTE		"Each number must be able to fit within a 32 bit register, or be between the values of -2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",13,10,13,10,0
 userString			BYTE		12 DUP(?)			;10 digit string, +1 for + or neg sign; +1 for null terminator
 userString_len		DWORD		?
+temp_num			DWORD		?
 userString_max_len	DWORD		LENGTHOF userString
 num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
 IntegerArray		SDWORD		2000 DUP(?)
@@ -59,6 +60,7 @@ main PROC
 	mDisplayString OFFSET program_info_1
 	mDisplayString OFFSET program_info_2
 	
+	PUSH    OFFSET temp_num
 	PUSH    OFFSET userString_len
 	PUSH	OFFSET Error_no_input
 	PUSH	OFFSET Error_char_num
@@ -79,7 +81,7 @@ ReadVal PROC
 	;	1) Invoke the mGetString macro to get user input in the form of a string of digits	
 	;***************************************************************************************************************************
 
-	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD
+	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD
 
 	mov eax, [EBP + 12]
 	mov StringRef, eax
@@ -96,6 +98,7 @@ _PromptUserInput:
 	push StringRef				;local variable
 	push StringMaxLen			;local variable
 	CALL getStringLen			;get string len
+	
 	mov eax, [EBP + 32]	
 	mov edx, [eax]
 	mov NumsEntered, edx		;local variable to hold nums entered
@@ -119,13 +122,14 @@ _PromptUserInput:
 	jz _noInputError
 	mov ESI, StringRef				;if nums were entered, then start loop
 	mov ECX, StringMaxLen			;test if no nums entered using local variable
+	mov numTemp, 0
 
 
 ;==================LOOP TO CONVERT STRING STARTS HERE=====================================================
 _convertString:	
 	LODSB					;takes ESI and copies to AL, then increment ESI to next element
 	cmp AL, 0
-	jz _Finished
+	jz _FinishedConvertingtoNum
 	cmp AL, 48				;nums are from 48 to 57; + is 43 and - is 45
 	jl	_checkifSign	
 	cmp AL, 57
@@ -141,13 +145,24 @@ _checkifSign:
 	jmp _NotNumError
 
 _Convert:
-	;TODO
-
+	PUSH [EBP + 36]			 ;temp return variable from ConvertASCIItoNum
+	PUSH EAX				; this pushes AL and garbage values
+	CALL ConvertASCIItoNum	
+	mov EAX, numTemp
+	mov ebx, 10
+	mul ebx					;TODO multiply by 10 then loop
+	pop eax
+	mov ebx, [EBP + 36]
+	mov eax, [ebx]
+	mov returnValueAscii, eax	;output variable from ConvertASCIItoNum
+	pop eax
+	add returnValueAscii, eax
+	mov numTemp, EAX
 
 _NextLoop:
 	
 	loop _ConvertString
-	jmp _Finished
+	jmp _FinishedConvertingtoNum
 ;==================LOOP TO CONVERT STRING ENDS HERE=====================================================
 
 
@@ -170,13 +185,14 @@ _noInputError:
 _TestifFirstDigitPlus:
 	cmp StringMaxLen, ECX
 	jnz _signNotFirstError
-	jmp _NextLoop
 	mov sign, 1	
+	jmp _NextLoop
+
 
 _TestifFirstDigitMinus:
 	cmp StringMaxLen, ECX
 	jnz _signNotFirstError
-	mov sign, -1							; local variable set as negative
+	mov sign, 2							; local variable set as negative
 	jmp _NextLoop
 
 _signNotFirstError:
@@ -191,14 +207,36 @@ _signNotFirstError:
 	;***************************************************************************************************************************
 	;	3) Store this one value in a memory variable (output paratmeter, by reference).                                                              
 	;***************************************************************************************************************************
-_Finished:
+
+_testIfNumtooLarge:
+
+
+_FinishedConvertingtoNum:
+	
+	cmp sign, 2
+	jz _convertNumtoNegative
+	jmp _storeNumtoArray
+	
+
+_convertNumtoNegative:
 	
 
 
+_storeNumtoArray:
+
+
+	mov eax, returnValueAscii  ;test delete
+	add eax, 5			;test delete to add num
+	call writeint		; test to show added num
+
+	RET 32		; dereference 1 passed parameter address
 
 
 
-	RET 28		; dereference 1 passed parameter address
+
+
+
+
 
 ReadVal ENDP
 
@@ -244,5 +282,86 @@ getStringLen ENDP
 
 
 
+ConvertASCIItoNum PROC
+	
+	LOCAL numText:BYTE 
+	PUSHAD
+
+	mov EAX, [EBP + 8]		;whole EAX register
+	mov EBX, [EBP + 12]		;output variable
+
+	mov numText, AL		;technically comparing AL here
+
+	cmp numText, 48
+	jz _zero
+	cmp numText, 49
+	jz _one
+	cmp numText, 50
+	jz _two
+	cmp numText, 51
+	jz _three
+	cmp numText, 52
+	jz _four
+	cmp numText, 53
+	jz _five
+	cmp numText, 54
+	jz _six
+	cmp numText, 55
+	jz _seven
+	cmp numText, 56
+	jz _eight
+	cmp numText, 57
+	jz _nine
+
+
+_zero:
+	mov EAX, 0
+	jmp _return
+
+_one:
+	mov EAX, 1
+	jmp _return
+
+_two:
+	mov EAX, 2
+	jmp _return
+
+_three:
+	mov EAX, 3
+	jmp _return
+
+_four:
+	mov EAX, 4
+	jmp _return
+
+_five:
+	mov EAX, 5
+	jmp _return
+
+_six:
+	mov EAX, 6
+	jmp _return
+
+_seven:
+	mov EAX, 7
+	jmp _return
+
+_eight:
+	mov EAX, 8
+	jmp _return
+
+_nine:
+	mov EAX, 9
+	jmp _return
+
+
+
+_return:
+	mov [EBX],EAX	;move result to output variable
+	
+	POPAD
+	ret 8
+
+ConvertASCIItoNum ENDP
 
 END main

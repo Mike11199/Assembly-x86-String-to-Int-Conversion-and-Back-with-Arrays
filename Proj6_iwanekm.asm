@@ -148,16 +148,20 @@ _Convert:
 	PUSH [EBP + 36]			 ;temp return variable from ConvertASCIItoNum
 	PUSH EAX				; this pushes AL and garbage values
 	CALL ConvertASCIItoNum	
-	mov EAX, numTemp
+	
+	mov EAX, numTemp			; tempNum to hold digits
 	mov ebx, 10
-	mul ebx					;TODO multiply by 10 then loop
-	pop eax
-	mov ebx, [EBP + 36]
-	mov eax, [ebx]
-	mov returnValueAscii, eax	;output variable from ConvertASCIItoNum
-	pop eax
-	add returnValueAscii, eax
-	mov numTemp, EAX
+	mul ebx						; multiply by 10 then loop
+	push eax					; save multiplied numTemp
+
+	mov ebx, [EBP + 36]		
+	mov eax, [ebx]				; return variable from ConvertASCIItoNum
+	mov returnValueAscii, eax	; save return variable from ConvertASCIItoNum
+
+	pop eax						; restore multipled value to eax
+	add returnValueAscii, eax	; add to return variable
+	mov	eax, returnValueAscii	; move num so far to eax
+	mov numTemp, EAX			; save to numTemp for next loop
 
 _NextLoop:
 	
@@ -254,6 +258,7 @@ WriteVal ENDP
 getStringLen PROC
 	
 	LOCAL StringLen:DWORD
+	PUSHAD
 
 	mov ECX, [EBP + 8]		;max length for counter
 	mov ESI, [EBP + 12]		;output ref
@@ -278,6 +283,7 @@ _end:
 	mov EDX, [EBP + 16] 	;move count to output variable
 	mov [EDX], EAX 			;move count to output variable
 	
+	POPAD
 	ret 12
 
 getStringLen ENDP

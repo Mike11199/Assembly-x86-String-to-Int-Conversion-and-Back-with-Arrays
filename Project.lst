@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/01/22 18:28:08
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/01/22 19:28:48
 <Project 6 - String Primitives and Macros      (Proj6_iwanek  Page 1 - 1
 
 
@@ -131,12 +131,26 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/01/22 18:28:08
 	   2D 20 32 5E 33
 	   31 29 2E 0D 0A
 	   0D 0A 00
- 00000167  0000000A [		userString			BYTE		10 DUP(0)
+ 00000167  0000000C [		userString			BYTE		12 DUP(0)			;10 digit string, +1 for + or neg sign; +1 for null terminator
 	    00
 	   ]
- 00000171 0000000A		userString_len		DWORD		LENGTHOF userString
-
-
+ 00000173 0000000C		userString_len		DWORD		LENGTHOF userString
+ 00000177 50 6C 65 61 73	num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
+	   65 20 65 6E 74
+	   65 72 20 61 20
+	   73 69 67 6E 65
+	   64 20 6E 75 6D
+	   62 65 72 20 62
+	   65 74 77 65 65
+	   6E 20 2D 32 5E
+	   33 31 20 61 6E
+	   64 20 32 5E 33
+	   31 3A 20 00
+ 000001AD  000007D0 [		IntegerArray		SDWORD		2000 DUP(?)
+	    00000000
+	   ]
+ 000020ED 000007D0		IntegerArray_len	DWORD		LENGTHOF IntegerArray  ;num elements
+ 000020F1 00001F40		IntegerArray_size	DWORD		SIZEOF IntegerArray	   ;num bytes
 
  00000000			.code
  00000000			main PROC
@@ -153,35 +167,73 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/01/22 18:28:08
  0000000D  BA 00000053 R     1		MOV   EDX, OFFSET program_info_2
  00000012  E8 00000000 E     1		CALL  WriteString
  00000017  5A		     1		POP   EDX				;Restore EDX
-					mGetString OFFSET userString, OFFSET userString_len
- 00000018  52		     1		PUSH  EDX				;Save EDX register
- 00000019  51		     1		PUSH  ECX
- 0000001A  BA 00000167 R     1		MOV   EDX,  OFFSET userString
- 0000001F  8B 0D 00000171 R  1		MOV   ECX,  [OFFSET userString_len]
- 00000025  E8 00000000 E     1		CALL  ReadString
- 0000002A  5A		     1		POP   EDX				;Restore EDX
- 0000002B  59		     1		POP   ECX				;Restore ECX
+					
+
+ 00000018  FF 35 00000173 R		PUSH    userString_len
+ 0000001E  68 00000167 R		PUSH	OFFSET userString
+ 00000023  68 00000177 R		PUSH	OFFSET num_prompt
+ 00000028  E8 00000007			CALL	ReadVal
+
 
 					Invoke ExitProcess,0	; exit to operating system
- 0000002C  6A 00	   *	    push   +000000000h
- 0000002E  E8 00000000 E   *	    call   ExitProcess
- 00000033			main ENDP
+ 0000002D  6A 00	   *	    push   +000000000h
+ 0000002F  E8 00000000 E   *	    call   ExitProcess
+ 00000034			main ENDP
 
 
- 00000033			ReadVal PROC
+ 00000034			ReadVal PROC
+
+					;Invoke the mGetString macro to get user input in the form of a string of digits
+					
+					LOCAL Value:DWORD, wholeNum:DWORD
+					mDisplayString [EBP + 8]				;prompt num	
+ 00000034  55		   *	    push   ebp
+ 00000035  8B EC	   *	    mov    ebp, esp
+ 00000037  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
+ 0000003A  52		     1		PUSH  EDX				;Save EDX register
+ 0000003B  8B 55 08	     1		MOV   EDX, [EBP + 8]
+ 0000003E  E8 00000000 E     1		CALL  WriteString
+ 00000043  5A		     1		POP   EDX				;Restore EDX
+					mGetString [EBP + 12], [EBP + 16]		;pass (ref, size) to macro to get user string
+ 00000044  52		     1		PUSH  EDX				;Save EDX register
+ 00000045  51		     1		PUSH  ECX
+ 00000046  8B 55 0C	     1		MOV   EDX,  [EBP + 12]
+ 00000049  8B 4D 10	     1		MOV   ECX,  [[EBP + 16]]
+ 0000004C  E8 00000000 E     1		CALL  ReadString
+ 00000051  5A		     1		POP   EDX				;Restore EDX
+ 00000052  59		     1		POP   ECX				;Restore ECX
 
 
- 00000033			ReadVal ENDP
 
 
- 00000033			WriteVal PROC
+					;Convert (USING STRING PRIMITIVES) the string of ASCII digits to its numeric value representation (SDWORD), validating each char is a valid # (not symbol)
+					
+					;LODSB	;takes ESI and copies to AL, then increment ESI to next element
+ 00000053  BA 00000167 R		mov EDX, OFFSET userString
+ 00000058  E8 00000000 E		CALL WriteString
 
 
- 00000033			WriteVal ENDP
+					;Store this one value in a memory variable (output paratmeter, by reference).
+
+
+
+
+ 0000005D  C9		   *	    leave  
+ 0000005E  C2 0004			RET 4		; dereference 1 passed parameter address
+
+ 00000061			ReadVal ENDP
+Proj6_iwanekm.asm(94) : warning A6004:procedure argument or local not referenced : Value
+Proj6_iwanekm.asm(94) : warning A6004:procedure argument or local not referenced : wholeNum
+
+
+ 00000061			WriteVal PROC
+
+
+ 00000061			WriteVal ENDP
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/01/22 18:28:08
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/01/22 19:28:48
 <Project 6 - String Primitives and Macros      (Proj6_iwanek  Symbols 2 - 1
 
 
@@ -283,8 +335,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000175 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000033 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 000020F5 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000061 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -354,7 +406,9 @@ ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-ReadVal  . . . . . . . . . . . .	P Near	 00000033 _TEXT	Length= 00000000 Public STDCALL
+ReadVal  . . . . . . . . . . . .	P Near	 00000034 _TEXT	Length= 0000002D Public STDCALL
+  Value  . . . . . . . . . . . .	DWord	 bp - 00000004
+  wholeNum . . . . . . . . . . .	DWord	 bp - 00000008
 SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -391,9 +445,9 @@ WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-WriteVal . . . . . . . . . . . .	P Near	 00000033 _TEXT	Length= 00000000 Public STDCALL
+WriteVal . . . . . . . . . . . .	P Near	 00000061 _TEXT	Length= 00000000 Public STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000033 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000034 Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -480,6 +534,9 @@ IDTIMEOUT  . . . . . . . . . . .	Number	 00007D00h
 IDTRYAGAIN . . . . . . . . . . .	Number	 0000000Ah   
 IDYES  . . . . . . . . . . . . .	Number	 00000006h   
 INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+IntegerArray_len . . . . . . . .	DWord	 000020ED _DATA	
+IntegerArray_size  . . . . . . .	DWord	 000020F1 _DATA	
+IntegerArray . . . . . . . . . .	DWord	 000001AD _DATA	
 KBDOWN_FLAG  . . . . . . . . . .	Number	 00000001h   
 KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
 KEY_MASKS  . . . . . . . . . . .	Number	 0000001Fh   
@@ -626,14 +683,15 @@ lightGreen . . . . . . . . . . .	Number	 0000000Ah
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
+num_prompt . . . . . . . . . . .	Byte	 00000177 _DATA	
 program_info_1 . . . . . . . . .	Byte	 00000000 _DATA	
 program_info_2 . . . . . . . . .	Byte	 00000053 _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
-userString_len . . . . . . . . .	DWord	 00000171 _DATA	
+userString_len . . . . . . . . .	DWord	 00000173 _DATA	
 userString . . . . . . . . . . .	Byte	 00000167 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
 
-	   0 Warnings
+	   2 Warnings
 	   0 Errors

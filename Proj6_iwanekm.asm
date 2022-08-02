@@ -219,7 +219,9 @@ _FinishedConvertingtoNum:
 	
 
 _convertNumtoNegative:
-	
+	mov eax, returnValueAscii  
+	neg eax
+	mov returnValueAscii, eax 
 
 
 _storeNumtoArray:

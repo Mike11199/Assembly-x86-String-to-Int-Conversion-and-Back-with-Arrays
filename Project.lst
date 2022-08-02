@@ -1,16 +1,23 @@
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    06/20/22 16:44:17
-#Program Template     (template.asm			     Page 1 - 1
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/01/22 18:28:08
+<Project 6 - String Primitives and Macros      (Proj6_iwanek  Page 1 - 1
 
 
-				TITLE Program Template     (template.asm)
+				TITLE Project 6 - String Primitives and Macros      (Proj6_iwanekm.asm)
 
-				; Author: 
-				; Last Modified:
-				; OSU email address: ONID_ID@oregonstate.edu
-				; Course number/section:   CS271 Section ???
-				; Project Number:                 Due Date:
-				; Description: This file is provided as a template from which you may work
-				;              when developing assembly projects in CS271.
+				;--------------------------------------------------------------------------------------------------------------------------------------------------
+				; Author:					Michael Iwanek
+				; Last Modified:			08/01/2022
+				; OSU email address:		iwanekm@oregonstate.edu
+				; Course number/section:	CS271 Section 400
+				; Project Number:			06
+				; Due Date:					08/07/2022
+				;--------------------------------------------------------------------------------------------------------------------------------------------------
+				; Description: 
+				;--------------------------------------------------------------------------------------------------------------------------------------------------
+				;			-This program 
+
+				;--------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 				INCLUDE Irvine32.inc
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
@@ -31,31 +38,161 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    06/20/22 16:44:17
 			      C .LIST
 			      C 
 
-				; (insert macro definitions here)
+				mGetString	MACRO	buffer, buffer_size
+					PUSH  EDX				;Save EDX register
+					PUSH  ECX
+					MOV   EDX,  buffer
+					MOV   ECX,  [buffer_size]
+					CALL  ReadString
+					POP   EDX				;Restore EDX
+					POP   ECX				;Restore ECX
+				ENDM
+
+				mDisplayString	MACRO	buffer
+					PUSH  EDX				;Save EDX register
+					MOV   EDX, buffer
+					CALL  WriteString
+					POP   EDX				;Restore EDX
+				ENDM
 
 				; (insert constant definitions here)
 
  00000000			.data
+ 00000000 48 65 6C 6C 6F	program_info_1		BYTE		"Hello!  Welcome to my program:  String Primitives and Macros by Michael Iwanek",13,10,13,10,0
+	   21 20 20 57 65
+	   6C 63 6F 6D 65
+	   20 74 6F 20 6D
+	   79 20 70 72 6F
+	   67 72 61 6D 3A
+	   20 20 53 74 72
+	   69 6E 67 20 50
+	   72 69 6D 69 74
+	   69 76 65 73 20
+	   61 6E 64 20 4D
+	   61 63 72 6F 73
+	   20 62 79 20 4D
+	   69 63 68 61 65
+	   6C 20 49 77 61
+	   6E 65 6B 0D 0A
+	   0D 0A 00
+ 00000053 50 6C 65 61 73	program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program will then display each number entered, their average value, and sum.",13,10
+	   65 20 65 6E 74
+	   65 72 20 69 6E
+	   20 31 30 20 73
+	   69 67 6E 65 64
+	   20 64 65 63 69
+	   6D 61 6C 20 69
+	   6E 74 65 67 65
+	   72 73 2E 20 20
+	   54 68 69 73 20
+	   70 72 6F 67 72
+	   61 6D 20 77 69
+	   6C 6C 20 74 68
+	   65 6E 20 64 69
+	   73 70 6C 61 79
+	   20 65 61 63 68
+	   20 6E 75 6D 62
+	   65 72 20 65 6E
+	   74 65 72 65 64
+	   2C 20 74 68 65
+	   69 72 20 61 76
+	   65 72 61 67 65
+	   20 76 61 6C 75
+	   65 2C 20 61 6E
+	   64 20 73 75 6D
+	   2E 0D 0A
+ 000000D3  45 61 63 68 20						BYTE		"Each number must be able to fit within a 32 bit register, or be between the values of -2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",13,10,13,10,0
+	   6E 75 6D 62 65
+	   72 20 6D 75 73
+	   74 20 62 65 20
+	   61 62 6C 65 20
+	   74 6F 20 66 69
+	   74 20 77 69 74
+	   68 69 6E 20 61
+	   20 33 32 20 62
+	   69 74 20 72 65
+	   67 69 73 74 65
+	   72 2C 20 6F 72
+	   20 62 65 20 62
+	   65 74 77 65 65
+	   6E 20 74 68 65
+	   20 76 61 6C 75
+	   65 73 20 6F 66
+	   20 2D 32 2C 31
+	   34 37 2C 34 38
+	   33 2C 36 34 37
+	   20 61 6E 64 20
+	   32 2C 31 34 37
+	   2C 34 38 33 2C
+	   36 34 37 20 69
+	   6E 63 6C 75 73
+	   69 76 65 20 28
+	   6F 72 20 2B 2F
+	   2D 20 32 5E 33
+	   31 29 2E 0D 0A
+	   0D 0A 00
+ 00000167  0000000A [		userString			BYTE		10 DUP(0)
+	    00
+	   ]
+ 00000171 0000000A		userString_len		DWORD		LENGTHOF userString
 
-				; (insert variable definitions here)
+
 
  00000000			.code
  00000000			main PROC
 
 				; (insert executable instructions here)
+					
+					mDisplayString OFFSET program_info_1
+ 00000000  52		     1		PUSH  EDX				;Save EDX register
+ 00000001  BA 00000000 R     1		MOV   EDX, OFFSET program_info_1
+ 00000006  E8 00000000 E     1		CALL  WriteString
+ 0000000B  5A		     1		POP   EDX				;Restore EDX
+					mDisplayString OFFSET program_info_2
+ 0000000C  52		     1		PUSH  EDX				;Save EDX register
+ 0000000D  BA 00000053 R     1		MOV   EDX, OFFSET program_info_2
+ 00000012  E8 00000000 E     1		CALL  WriteString
+ 00000017  5A		     1		POP   EDX				;Restore EDX
+					mGetString OFFSET userString, OFFSET userString_len
+ 00000018  52		     1		PUSH  EDX				;Save EDX register
+ 00000019  51		     1		PUSH  ECX
+ 0000001A  BA 00000167 R     1		MOV   EDX,  OFFSET userString
+ 0000001F  8B 0D 00000171 R  1		MOV   ECX,  [OFFSET userString_len]
+ 00000025  E8 00000000 E     1		CALL  ReadString
+ 0000002A  5A		     1		POP   EDX				;Restore EDX
+ 0000002B  59		     1		POP   ECX				;Restore ECX
 
 					Invoke ExitProcess,0	; exit to operating system
- 00000000  6A 00	   *	    push   +000000000h
- 00000002  E8 00000000 E   *	    call   ExitProcess
- 00000007			main ENDP
+ 0000002C  6A 00	   *	    push   +000000000h
+ 0000002E  E8 00000000 E   *	    call   ExitProcess
+ 00000033			main ENDP
 
-				; (insert additional procedures here)
+
+ 00000033			ReadVal PROC
+
+
+ 00000033			ReadVal ENDP
+
+
+ 00000033			WriteVal PROC
+
+
+ 00000033			WriteVal ENDP
+
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    06/20/22 16:44:17
-#Program Template     (template.asm			     Symbols 2 - 1
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/01/22 18:28:08
+<Project 6 - String Primitives and Macros      (Proj6_iwanek  Symbols 2 - 1
 
 
+
+
+Macros:
+
+                N a m e                 Type
+
+mDisplayString . . . . . . . . .	Proc
+mGetString . . . . . . . . . . .	Proc
 
 
 Structures and Unions:
@@ -146,8 +283,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000000 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000007 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000175 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000033 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -217,6 +354,7 @@ ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadVal  . . . . . . . . . . . .	P Near	 00000033 _TEXT	Length= 00000000 Public STDCALL
 SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -253,8 +391,9 @@ WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteVal . . . . . . . . . . . .	P Near	 00000033 _TEXT	Length= 00000000 Public STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000007 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000033 Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -487,7 +626,11 @@ lightGreen . . . . . . . . . . .	Number	 0000000Ah
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
+program_info_1 . . . . . . . . .	Byte	 00000000 _DATA	
+program_info_2 . . . . . . . . .	Byte	 00000053 _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
+userString_len . . . . . . . . .	DWord	 00000171 _DATA	
+userString . . . . . . . . . . .	Byte	 00000167 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   

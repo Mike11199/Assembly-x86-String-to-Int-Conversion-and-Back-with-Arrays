@@ -92,6 +92,11 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET IntegerArray
 	CALL CalculateSum	
 
+	PUSH    OFFSET rounded_avg
+	PUSH    OFFSET sum_all_nums
+	PUSH    OFFSET IntegerArray_len
+	CALL CalculateAverage	
+
 	Invoke ExitProcess,0	; exit to operating system
 main ENDP
 
@@ -529,7 +534,7 @@ ConvertNumtoASCII ENDP
 	;PUSH    OFFSET IntegerArray
 
 CalculateSum PROC
-	LOCAL num:DWORD 
+	LOCAL num:SDWORD 
 	PUSHAD
 
 	mov num, 0
@@ -559,6 +564,79 @@ _SumLoop:
 CalculateSum ENDP
 
 
+	;PUSH    OFFSET rounded_avg
+	;PUSH    OFFSET sum_all_nums
+	;PUSH    OFFSET IntegerArray_len
+
+CalculateAverage PROC
+	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledquotient:SDWORD
+	PUSHAD
+
+	mov num, 0
+	mov ECX, [EBP + 8]		; OFFSET IntegerArray_len
+	mov ECX, [ECX]
+	mov EAX, [EBP + 12]		; OFFSET sum_all_nums
+	mov EAX, [EAX]
+	CDQ
+	IDIV ECX
+
+	mov quotient, EAX
+	mov remainder, EDX
+	
+	mov EAX, remainder
+	mov EBX, 2
+	mul EBX
+	mov doubledquotient, EAX
+
+	;test delete start
+	mov EAX, quotient
+	CALL WriteInt
+	mov EAX, remainder
+	CALL WriteInt
+	mov EAX, doubledquotient
+	CALL WriteInt
+	;test delete end
+
+
+	cmp EAX, remainder
+	jge _roundAverageUp
+	jmp _savevalue
+
+_roundAverageUp:
+	cmp EAX, 0
+	jl	_roundNegativeDown
+
+
+_roundPositiveUp:
+	mov EAX, quotient
+	inc quotient
+	mov quotient, EAX
+	jmp _savevalue
+
+_roundNegativeDown:
+	mov EAX, quotient
+	dec quotient
+	mov quotient, EAX
+
+_saveValue:
+
+	mov EAX, [EBP + 16]		; OFFSET rounded_avg
+	mov EBX, quotient
+	mov [EAX], ebx	
+
+
+
+	;test delete start
+	mov EAX, [EBP + 16]		; OFFSET rounded_avg
+	mov EAX, [EAX]
+	CALL WriteInt
+	;test delete end
+
+
+	POPAD
+	ret 12
+
+CalculateAverage ENDP
 
 
 

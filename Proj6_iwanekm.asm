@@ -40,17 +40,22 @@ ENDM
 program_info_1		BYTE		"Hello!  Welcome to my program:  String Primitives and Macros by Michael Iwanek",13,10,13,10,0
 program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program will then display each number entered, their average value, and sum.",13,10
 					BYTE		"Each number must be able to fit within a 32 bit register, or be between the values of -2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",13,10,13,10,0
-userString			BYTE		12 DUP(?)			;10 digit string, +1 for + or neg sign; +1 for null terminator
+userString			BYTE		50 DUP(?)			;10 digit string, +1 for + or neg sign; +1 for null terminator
 userString_len		DWORD		?
-temp_num			DWORD		?
+temp_num			SDWORD		?
+temp_string			DWORD		?
 userString_max_len	DWORD		LENGTHOF userString
 num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
-IntegerArray		SDWORD		2000 DUP(?)
-IntegerArray_len	DWORD		LENGTHOF IntegerArray  ;num elements
+IntegerArray		SDWORD		10 DUP(?)
+IntegerArray_len	DWORD		0 ;num elements
 IntegerArray_size	DWORD		SIZEOF IntegerArray	   ;num bytes
 Error_no_input		BYTE		"Error!  You didn't enter in any numbers.",0 
 Error_char_num		BYTE		"Error!  You can only enter numbers, and the plus or minus sign.",0 
 Error_sign_use		BYTE		"Error!  You can only enter the plus or minus sign at the beginning of the number.",0 
+Error_too_large		BYTE		"Error!  Your number must be between the ranges of-2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",0 
+display_1			BYTE		"You entered the following numbers: ",0 
+display_2			BYTE		"The sum offset these numbers is: ",0 
+display_3			BYTE		"The rounded average is: ",0 
 
 .code
 main PROC
@@ -58,8 +63,15 @@ main PROC
 ; (insert executable instructions here)
 	
 	mDisplayString OFFSET program_info_1
-	mDisplayString OFFSET program_info_2
+	mDisplayString OFFSET program_info_2	
 	
+	mov ECX, 10
+
+_InputNumberLoop:
+
+	PUSH	OFFSET Error_too_large
+	PUSH    OFFSET IntegerArray_len
+	PUSH    OFFSET IntegerArray
 	PUSH    OFFSET temp_num
 	PUSH    OFFSET userString_len
 	PUSH	OFFSET Error_no_input
@@ -70,6 +82,7 @@ main PROC
 	PUSH	OFFSET num_prompt
 	CALL	ReadVal
 
+LOOP _InputNumberLoop
 
 	Invoke ExitProcess,0	; exit to operating system
 main ENDP
@@ -81,7 +94,7 @@ ReadVal PROC
 	;	1) Invoke the mGetString macro to get user input in the form of a string of digits	
 	;***************************************************************************************************************************
 
-	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD
+	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD
 	PUSHAD
 
 	mov eax, [EBP + 12]
@@ -121,6 +134,8 @@ _PromptUserInput:
 	mov ECX, NumsEntered			;test if no nums entered using local variable
 	cmp ECX, 0
 	jz _noInputError
+	cmp ECX, 10
+	jg _numTooLargError
 	mov ESI, StringRef				;if nums were entered, then start loop
 	mov ECX, StringMaxLen			;test if no nums entered using local variable
 	mov numTemp, 0
@@ -151,6 +166,11 @@ _Convert:
 	CALL ConvertASCIItoNum	
 	
 	mov EAX, numTemp			; tempNum to hold digits
+
+	cmp EAX, 214748364
+	jg  _numTooLargError
+
+
 	mov ebx, 10
 	mul ebx						; multiply by 10 then loop
 	push eax					; save multiplied numTemp
@@ -175,14 +195,14 @@ _NextLoop:
 ;Errors and testing if + or - if first char
 _NotNumError:
 	
-	mDisplayString [EBP + 24]				;prompt num	
+	mDisplayString [EBP + 24]				;not num string
 	call CrLf
 	call CrLF
 	jmp _PromptUserInput
 
 
 _noInputError:
-	mDisplayString [EBP + 28]				;prompt num	
+	mDisplayString [EBP + 28]				;no input string
 	call CrLf
 	call CrLF
 	jmp _PromptUserInput
@@ -213,14 +233,11 @@ _signNotFirstError:
 	;	3) Store this one value in a memory variable (output paratmeter, by reference).                                                              
 	;***************************************************************************************************************************
 
-_testIfNumtooLarge:
-
-
 _FinishedConvertingtoNum:
 	
 	cmp sign, 2
 	jz _convertNumtoNegative
-	jmp _storeNumtoArray
+	jmp _testIfNumtooLarge
 	
 
 _convertNumtoNegative:
@@ -229,15 +246,46 @@ _convertNumtoNegative:
 	mov returnValueAscii, eax 
 
 
+_testIfNumtooLarge:
+	mov EAX, returnValueAscii	
+	cmp EAX, 2147483647
+	jg	_numTooLargError
+	cmp EAX, -2147483647
+	jl	_numTooLargError
+	jmp _storeNumtoArray
+
+_numTooLargError:
+	mDisplayString [EBP + 48]	
+	call CrLf
+	call CrLF
+	jmp _PromptUserInput	
+	
+
+
 _storeNumtoArray:
 
 
-	mov eax, returnValueAscii  ;test delete
-	add eax, 5			;test delete to add num
-	call writeint		; test to show added num
+	mov eax, returnValueAscii				; test delete
+	add eax, 5								; test delete to add num
+	call writeint							; test to show added num
+
+	mov     ESI, [EBP + 40]				    ; offset of int array		
+	MOV		EAX, [EBP + 44]					; offset IntegerArray length variable to track how many elements are in array
+	mov		EAX, [EAX]
+	mov		arrayelements, EAX				; local variable
+	mov		EBX, 4
+	mul		EBX	
+	mov		ECX, returnValueAscii
+	mov		[ESI + EAX], ECX				; store num in int array + offset to put in the last postion of the array
+
+	mov		EDI, [EBP + 44]
+	inc		arrayelements
+	mov		eax, arrayelements
+	MOV	    [EDI], eax				;store count of array elements
+
 
 	POPAD
-	RET 32		; dereference 1 passed parameter address
+	RET 44					; dereference passed parameters
 
 
 ReadVal ENDP
@@ -245,6 +293,16 @@ ReadVal ENDP
 
 
 WriteVal PROC
+
+
+
+
+
+
+
+
+
+
 
 
 WriteVal ENDP
@@ -256,7 +314,7 @@ getStringLen PROC
 	LOCAL StringLen:DWORD
 	PUSHAD
 
-	mov ECX, [EBP + 8]		;max length for counter
+	mov ECX, 30				;max length for counter
 	mov ESI, [EBP + 12]		;output ref
 
 	mov StringLen, 0
@@ -275,6 +333,7 @@ _nocount:
 	loop _countLoop
 	
 _end:
+	
 	mov EAX, StringLen		;LOCAL VARIABLE
 	mov EDX, [EBP + 16] 	;move count to output variable
 	mov [EDX], EAX 			;move count to output variable
@@ -295,6 +354,7 @@ ConvertASCIItoNum PROC
 	mov EBX, [EBP + 12]		;output variable
 
 	mov numText, AL		;technically comparing AL here
+
 
 	cmp numText, 48
 	jz _zero
@@ -367,5 +427,89 @@ _return:
 	ret 8
 
 ConvertASCIItoNum ENDP
+
+
+ConvertNumtoASCII PROC
+	
+	LOCAL numText:BYTE 
+	PUSHAD
+
+	mov EAX, [EBP + 8]		;whole EAX register
+	mov EBX, [EBP + 12]		;output variable
+
+	mov numText, AL			;technically comparing AL here
+
+
+	cmp numText, 48
+	jz _zero
+	cmp numText, 49
+	jz _one
+	cmp numText, 50
+	jz _two
+	cmp numText, 51
+	jz _three
+	cmp numText, 52
+	jz _four
+	cmp numText, 53
+	jz _five
+	cmp numText, 54
+	jz _six
+	cmp numText, 55
+	jz _seven
+	cmp numText, 56
+	jz _eight
+	cmp numText, 57
+	jz _nine
+
+
+_zero:
+	mov EAX, 0
+	jmp _return
+
+_one:
+	mov EAX, 1
+	jmp _return
+
+_two:
+	mov EAX, 2
+	jmp _return
+
+_three:
+	mov EAX, 3
+	jmp _return
+
+_four:
+	mov EAX, 4
+	jmp _return
+
+_five:
+	mov EAX, 5
+	jmp _return
+
+_six:
+	mov EAX, 6
+	jmp _return
+
+_seven:
+	mov EAX, 7
+	jmp _return
+
+_eight:
+	mov EAX, 8
+	jmp _return
+
+_nine:
+	mov EAX, 9
+	jmp _return
+
+
+
+_return:
+	mov [EBX],EAX	;move result to output variable
+	
+	POPAD
+	ret 8
+
+ConvertNumtoASCII ENDP
 
 END main

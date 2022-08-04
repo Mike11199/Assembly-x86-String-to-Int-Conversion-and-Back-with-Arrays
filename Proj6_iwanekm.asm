@@ -56,6 +56,8 @@ Error_too_large		BYTE		"Error!  Your number must be between the ranges of-2,147,
 display_1			BYTE		"You entered the following numbers: ",0 
 display_2			BYTE		"The sum offset these numbers is: ",0 
 display_3			BYTE		"The rounded average is: ",0 
+rounded_avg			SDWORD		?
+sum_all_nums		SDWORD		?
 
 
 .code
@@ -84,6 +86,12 @@ _InputNumberLoop:
 	CALL	ReadVal
 
 LOOP _InputNumberLoop
+
+	PUSH	OFFSET temp_num
+	PUSH    OFFSET sum_all_nums
+	PUSH    OFFSET IntegerArray_len
+	PUSH    OFFSET IntegerArray
+	CALL CalculateSum	
 
 	Invoke ExitProcess,0	; exit to operating system
 main ENDP
@@ -432,7 +440,7 @@ ConvertASCIItoNum ENDP
 
 ConvertNumtoASCII PROC
 	
-	LOCAL num:BYTE 
+	LOCAL num:DWORD 
 	PUSHAD
 
 	mov EAX, [EBP + 8]		;this will be temp string for output
@@ -514,8 +522,49 @@ ConvertNumtoASCII ENDP
 
 
 
-CalculateSum PROC
 
+
+
+	;PUSH    OFFSET sum_all_nums
+	;PUSH    OFFSET IntegerArray_len
+	;PUSH    OFFSET IntegerArray
+
+CalculateSum PROC
+	LOCAL num:DWORD 
+	PUSHAD
+
+	mov num, 0
+
+	mov ECX, [EBP + 12]		; OFFSET IntegerArray_len
+	mov ECX, [ECX]
+	mov EDI, [EBP + 8]		; OFFSET IntegerArray
+
+_SumLoop:	
+	mov EAX, [EDI]
+	mov EBX, num
+	add EAX, EBX
+	mov num, EAX
+	add EDI, 4
+
+	LOOP _SumLoop
+
+	
+	mov EAX, [EBP + 16]		; OFFSET sum_all_nums
+	mov EBX, num
+	mov [EAX], EBX
+
+	;test
+	mov EAX, 0
+	mov EAX, [EBP + 16]		; OFFSET sum_all_nums
+	mov EAX, [EAX]
+	call writedec
+
+
+	;test end
+
+
+	POPAD
+	ret 16
 
 CalculateSum ENDP
 

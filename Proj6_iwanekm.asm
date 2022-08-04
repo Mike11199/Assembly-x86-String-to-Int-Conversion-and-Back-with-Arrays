@@ -43,7 +43,8 @@ program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program
 userString			BYTE		50 DUP(?)			;10 digit string, +1 for + or neg sign; +1 for null terminator
 userString_len		DWORD		?
 temp_num			SDWORD		?
-temp_string			BYTE		50 DUP(?)
+temp_string			BYTE		32 DUP(?)
+temp_string2		BYTE		32 DUP(?)
 userString_max_len	DWORD		LENGTHOF userString
 num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
 IntegerArray		SDWORD		10 DUP(?)
@@ -100,6 +101,7 @@ LOOP _InputNumberLoop
 
 
 	mDisplayString OFFSET display_1
+	PUSH    OFFSET temp_string2
 	PUSH    OFFSET temp_string
 	PUSH    OFFSET StringArray
 	PUSH    OFFSET IntegerArray_len
@@ -308,7 +310,7 @@ _storeNumtoArray:
 	mov		EBX, 4
 	mul		EBX	
 	mov		ECX, returnValueAscii
-	mov		[ESI + EAX], ECX				; store num in int array + offset to put in the last postion of the array
+	mov		[ESI + EAX], ECX		; store num in int array + offset to put in the last postion of the array
 
 	mov		EDI, [EBP + 44]
 	inc		arrayelements
@@ -445,16 +447,41 @@ ConvertASCIItoNum ENDP
 
 ConvertNumtoASCII PROC
 	
-	 ; parameter order:  temp string, integer value
+	 ; parameter order:  temp string, integer value, tempstring2
 
-	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, lastElementFlag:DWORD
+	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, newStringLen:DWORD
 	PUSHAD
+
+	mov ecx, 32
+	mov EDI, [EBP + 16]		; temp string2 offset from stack
+
+_ClearString_one:
+	mov EAX, 0
+	mov [EDI], EAX
+	add EDI, 1
+	loop _ClearString_one
+
+
+	
+	mov ecx, 32
+	mov EDI, [EBP + 16]		; temp string offset from stack
+
+_ClearString_two:
+	mov EAX, 0
+	mov [EDI], EAX
+	add EDI, 1
+	loop _ClearString_two
+
+
+
+
 
 	mov EDI, [EBP + 12]		; temp string offset from stack
 	mov EAX, [EBP + 8]		; integer from stack
 
 	mov	num, EAX
-	mov lastElementFlag, 0
+	mov newStringLen, 0
+
 
 _MainConversionLoop:
 	;need to repeatedly divide by 10, multiply by zeros until no remainder left, then reverse string array created.
@@ -551,21 +578,35 @@ _nine_num:
 
 add_num_to_string:
 	mov [EDI], AL	;move result to output variable
-	add EDI, 2		;increment
+	add EDI, 1		;increment
 	mov EAX, quotient
 	mov num, EAX
+	inc newStringLen
 	jmp _MainConversionLoop
 
 
 _AddTERMINATOR:
 	mov	AL, 0
 	mov [EDI], AL	;move result to output variable
-
+	inc newStringLen
 
 
 _FinishConvertingNumtoString:
 
 	;NEED TO REVERSE STRING AFTERWARDS
+	mov ECX, newStringLen
+	mov ESI, [EBP + 12]		; temp string offset from stack
+	add ESI, ECX			; so source strings starts from end
+	dec ESI
+	dec ESI
+	mov EDI, [EBP + 16]		; temp string offset2 from stack
+	
+_revLoop: ;reference StringManipulator.asm from canvas
+	STD
+	LODSB
+	CLD
+	STOSB
+	LOOP _revLoop
 
 
 
@@ -716,6 +757,7 @@ DisplayAverage PROC
 DisplayAverage ENDP
 
 
+	;PUSH    OFFSET temp_string2
 	;PUSH    OFFSET temp_string
 	;PUSH    OFFSET StringArray
 	;PUSH    OFFSET IntegerArray_len
@@ -724,14 +766,17 @@ DisplayAverage ENDP
 
 WriteVal PROC
 
-	LOCAL num:SDWORD, numString:DWORD
+	LOCAL num:SDWORD, numStringOffset:DWORD
 	PUSHAD
 
 	mov ECX, [EBP + 12]		; OFFSET integer array length from stack for LOOP counter
 	mov ESI, [EBP + 8]		; OFFSET integer array from stack
-	mov EDI, [EBP + 16]		; OFFSET string array from stack
+	;mov EDI, [EBP + 16]		; OFFSET string array from stack
 
 _convertLoop:
+
+	mov EAX, [EBP + 24]		; OFFSET temp_string2 RETURN VARIABLE from stack	
+	PUSH EAX				; push temp_string for ConvertNumtoASCII proc
 
 	mov EAX, [EBP + 20]		; OFFSET temp_string RETURN VARIABLE from stack	
 	PUSH EAX				; push temp_string for ConvertNumtoASCII proc
@@ -741,13 +786,10 @@ _convertLoop:
 
 	CALL ConvertNumtoASCII  ; parameter order: return string, int by val
 
-	mov EAX, [EBP + 20]		; access return value from stack that ConvertNumtoASCII used with temp string
-	mov numString, EAX
+	mov EAX, [EBP + 24]		; access return value from stack that ConvertNumtoASCII used with temp string
 	
-	mov EAX, numString
-	mov [EDI], EAX
-	
-	add EDI, 4				; increment string array
+	mDisplayString EAX
+
 	add ESI, 4				; increment int array
 
 	LOOP _convertLoop

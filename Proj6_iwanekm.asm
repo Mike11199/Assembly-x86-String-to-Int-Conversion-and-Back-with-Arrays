@@ -87,7 +87,6 @@ _InputNumberLoop:
 
 LOOP _InputNumberLoop
 
-	PUSH	OFFSET temp_num
 	PUSH    OFFSET sum_all_nums
 	PUSH    OFFSET IntegerArray_len
 	PUSH    OFFSET IntegerArray
@@ -553,18 +552,9 @@ _SumLoop:
 	mov EBX, num
 	mov [EAX], EBX
 
-	;test
-	mov EAX, 0
-	mov EAX, [EBP + 16]		; OFFSET sum_all_nums
-	mov EAX, [EAX]
-	call writedec
-
-
-	;test end
-
 
 	POPAD
-	ret 16
+	ret 12
 
 CalculateSum ENDP
 

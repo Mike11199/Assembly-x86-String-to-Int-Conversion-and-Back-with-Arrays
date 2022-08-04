@@ -60,7 +60,7 @@ display_2			BYTE		"The sum offset these numbers is: ",0
 display_3			BYTE		"The rounded average is: ",0 
 rounded_avg			SDWORD		?
 sum_all_nums		SDWORD		?
-
+comma_string		BYTE		", ",0
 
 .code
 main PROC
@@ -101,6 +101,8 @@ LOOP _InputNumberLoop
 
 
 	mDisplayString OFFSET display_1
+	CALL	CrLf
+	PUSH    OFFSET comma_string
 	PUSH    OFFSET temp_string2
 	PUSH    OFFSET temp_string
 	PUSH    OFFSET StringArray
@@ -109,9 +111,10 @@ LOOP _InputNumberLoop
 	CALL WriteVal
 
 	mDisplayString OFFSET display_2	
-
+	CALL	CrLf
 
 	mDisplayString OFFSET display_3	
+	CALL	CrLf
 	PUSH    OFFSET rounded_avg
 	PUSH	OFFSET	temp_num
 	CALL DisplayAverage	
@@ -297,11 +300,6 @@ _numTooLargError:
 
 
 _storeNumtoArray:
-
-
-	mov eax, returnValueAscii				; test delete
-	add eax, 5								; test delete to add num
-	call writeint							; test to show added num
 
 	mov     ESI, [EBP + 40]				    ; offset of int array		
 	MOV		EAX, [EBP + 44]					; offset IntegerArray length variable to track how many elements are in array
@@ -611,7 +609,7 @@ _revLoop: ;reference StringManipulator.asm from canvas
 
 
 	POPAD
-	ret 8
+	ret 12
 
 ConvertNumtoASCII ENDP
 
@@ -770,6 +768,7 @@ WriteVal PROC
 	PUSHAD
 
 	mov ECX, [EBP + 12]		; OFFSET integer array length from stack for LOOP counter
+	mov ECX, [ECX]
 	mov ESI, [EBP + 8]		; OFFSET integer array from stack
 	;mov EDI, [EBP + 16]		; OFFSET string array from stack
 
@@ -789,6 +788,9 @@ _convertLoop:
 	mov EAX, [EBP + 24]		; access return value from stack that ConvertNumtoASCII used with temp string
 	
 	mDisplayString EAX
+	
+	mov EAX, [EBP + 28]		;comma string
+	mDisplayString EAX
 
 	add ESI, 4				; increment int array
 
@@ -797,7 +799,7 @@ _convertLoop:
 	
 	
 	POPAD
-	ret 12
+	ret 24
 
 
 

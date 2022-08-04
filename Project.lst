@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/03/22 23:02:14
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/03/22 23:16:58
 <Project 6 - String Primitives and Macros      (Proj6_iwanek  Page 1 - 1
 
 
@@ -810,7 +810,7 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/03/22 23:02:14
 					;PUSH    OFFSET IntegerArray_len
 
  000003B0			CalculateAverage PROC
-					LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledquotient:SDWORD
+					LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledRemainder:SDWORD
  000003B0  55		   *	    push   ebp
  000003B1  8B EC	   *	    mov    ebp, esp
  000003B3  83 C4 F0	   *	    add    esp, 0FFFFFFF0h
@@ -831,41 +831,59 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/03/22 23:02:14
  000003D1  8B 45 F4			mov EAX, remainder
  000003D4  BB 00000002			mov EBX, 2
  000003D9  F7 E3			mul EBX
- 000003DB  89 45 F0			mov doubledquotient, EAX
+ 000003DB  89 45 F0			mov doubledRemainder, EAX
 
 					;test delete start
  000003DE  8B 45 F8			mov EAX, quotient
  000003E1  E8 00000000 E		CALL WriteInt
  000003E6  8B 45 F4			mov EAX, remainder
  000003E9  E8 00000000 E		CALL WriteInt
- 000003EE  8B 45 F0			mov EAX, doubledquotient
+ 000003EE  8B 45 F0			mov EAX, doubledRemainder
  000003F1  E8 00000000 E		CALL WriteInt
 					;test delete end
 
 
  000003F6  3B 45 F4			cmp EAX, remainder
- 000003F9  7F 02			jg _roundAverageUp
- 000003FB  EB 03			jmp _savevalue
-
+ 000003F9  7D 02			jge _roundAverageUp
+ 000003FB  EB 0D			jmp _saveValue
 
  000003FD			_roundAverageUp:
- 000003FD  8B 45 F4			mov EAX, remainder
+ 000003FD  83 F8 00			cmp EAX, 0
+ 00000400  7C 05			jl	_roundNegativeDown
 
 
- 00000400			_savevalue:
+ 00000402			_roundPositiveUp:	
+ 00000402  FF 45 F8			inc quotient
+ 00000405  EB 03			jmp _savevalue
 
- 00000400  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
+ 00000407			_roundNegativeDown:
+ 00000407  FF 4D F8			dec quotient
 
- 00000403  61				POPAD
- 00000404  C9		   *	    leave  
- 00000405  C2 000C			ret 12
+ 0000040A			_saveValue:
 
- 00000408			CalculateAverage ENDP
+ 0000040A  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
+ 0000040D  8B 5D F8			mov EBX, quotient
+ 00000410  89 18			mov [EAX], ebx	
+
+
+
+					;test delete start
+ 00000412  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
+ 00000415  8B 00			mov EAX, [EAX]
+ 00000417  E8 00000000 E		CALL WriteInt
+					;test delete end
+
+
+ 0000041C  61				POPAD
+ 0000041D  C9		   *	    leave  
+ 0000041E  C2 000C			ret 12
+
+ 00000421			CalculateAverage ENDP
 
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/03/22 23:02:14
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/03/22 23:16:58
 <Project 6 - String Primitives and Macros      (Proj6_iwanek  Symbols 2 - 1
 
 
@@ -968,20 +986,22 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 0000039C Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000408 Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000421 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
-CalculateAverage . . . . . . . .	P Near	 000003B0 _TEXT	Length= 00000058 Public STDCALL
+CalculateAverage . . . . . . . .	P Near	 000003B0 _TEXT	Length= 00000071 Public STDCALL
   num  . . . . . . . . . . . . .	DWord	 bp - 00000004
   quotient . . . . . . . . . . .	DWord	 bp - 00000008
   remainder  . . . . . . . . . .	DWord	 bp - 0000000C
-  doubledquotient  . . . . . . .	DWord	 bp - 00000010
+  doubledRemainder . . . . . . .	DWord	 bp - 00000010
   _roundAverageUp  . . . . . . .	L Near	 000003FD _TEXT	
-  _savevalue . . . . . . . . . .	L Near	 00000400 _TEXT	
+  _roundPositiveUp . . . . . . .	L Near	 00000402 _TEXT	
+  _roundNegativeDown . . . . . .	L Near	 00000407 _TEXT	
+  _saveValue . . . . . . . . . .	L Near	 0000040A _TEXT	
 CalculateSum . . . . . . . . . .	P Near	 0000037E _TEXT	Length= 00000032 Public STDCALL
   num  . . . . . . . . . . . . .	DWord	 bp - 00000004
   _SumLoop . . . . . . . . . . .	L Near	 00000394 _TEXT	

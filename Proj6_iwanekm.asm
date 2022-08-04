@@ -569,7 +569,7 @@ CalculateSum ENDP
 	;PUSH    OFFSET IntegerArray_len
 
 CalculateAverage PROC
-	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledquotient:SDWORD
+	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledRemainder:SDWORD
 	PUSHAD
 
 	mov num, 0
@@ -586,37 +586,37 @@ CalculateAverage PROC
 	mov EAX, remainder
 	mov EBX, 2
 	mul EBX
-	mov doubledquotient, EAX
+	mov doubledRemainder, EAX
 
 	;test delete start
 	mov EAX, quotient
 	CALL WriteInt
 	mov EAX, remainder
 	CALL WriteInt
-	mov EAX, doubledquotient
+	mov EAX, doubledRemainder
 	CALL WriteInt
 	;test delete end
 
-
-	cmp EAX, remainder
-	jge _roundAverageUp
-	jmp _savevalue
-
-_roundAverageUp:
 	cmp EAX, 0
-	jl	_roundNegativeDown
+	jl	_testNegativeRounding
+	jmp _testPositiveRounding
 
+_testNegativeRounding:
+	cmp EAX, remainder
+	jle _roundNegativeDown
+	jmp _saveValue
 
-_roundPositiveUp:
-	mov EAX, quotient
+_testPositiveRounding:
+	cmp EAX, remainder
+	jge _roundPositiveUp
+	jmp _saveValue
+
+_roundPositiveUp:	
 	inc quotient
-	mov quotient, EAX
-	jmp _savevalue
+	jmp _saveValue
 
 _roundNegativeDown:
-	mov EAX, quotient
 	dec quotient
-	mov quotient, EAX
 
 _saveValue:
 

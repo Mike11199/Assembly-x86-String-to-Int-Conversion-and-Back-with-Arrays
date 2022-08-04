@@ -97,6 +97,19 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET IntegerArray_len
 	CALL CalculateAverage	
 
+
+	mDisplayString OFFSET display_1
+
+	mDisplayString OFFSET display_2	
+
+
+	mDisplayString OFFSET display_3	
+	PUSH    OFFSET rounded_avg
+	PUSH	OFFSET	temp_num
+	CALL DisplayAverage	
+
+
+
 	Invoke ExitProcess,0	; exit to operating system
 main ENDP
 
@@ -452,6 +465,8 @@ ConvertNumtoASCII PROC
 
 	mov	num, EBX
 
+	;need to repeatedly divide by 10, multiply by zeros until no remainder left, then reverse string array created.
+
 	cmp num, 0
 	jz _zero
 	cmp num, 1
@@ -589,12 +604,12 @@ CalculateAverage PROC
 	mov doubledRemainder, EAX
 
 	;test delete start
-	mov EAX, quotient
-	CALL WriteInt
-	mov EAX, remainder
-	CALL WriteInt
-	mov EAX, doubledRemainder
-	CALL WriteInt
+	;mov EAX, quotient
+	;CALL WriteInt
+	;mov EAX, remainder
+	;CALL WriteInt
+	;mov EAX, doubledRemainder
+	;CALL WriteInt
 	;test delete end
 
 	cmp EAX, 0
@@ -602,12 +617,12 @@ CalculateAverage PROC
 	jmp _testPositiveRounding
 
 _testNegativeRounding:
-	cmp EAX, remainder
+	cmp EAX, quotient
 	jle _roundNegativeDown
 	jmp _saveValue
 
 _testPositiveRounding:
-	cmp EAX, remainder
+	cmp EAX, quotient
 	jge _roundPositiveUp
 	jmp _saveValue
 
@@ -627,9 +642,9 @@ _saveValue:
 
 
 	;test delete start
-	mov EAX, [EBP + 16]		; OFFSET rounded_avg
-	mov EAX, [EAX]
-	CALL WriteInt
+	;mov EAX, [EBP + 16]		; OFFSET rounded_avg
+	;mov EAX, [EAX]
+	;CALL WriteInt
 	;test delete end
 
 
@@ -639,5 +654,30 @@ _saveValue:
 CalculateAverage ENDP
 
 
+
+
+	;PUSH   OFFSET rounded_avg
+	;PUSH	OFFSET	temp_num
+
+
+DisplayAverage PROC
+	LOCAL num:SDWORD, numString:DWORD
+	PUSHAD
+
+	mov EBX, [EBP + 8]		; OFFSET temp_num
+	mov EBX, [EBX]
+	mov EAX, [EBP + 12]		; OFFSET rounded_avg
+	mov EAX, [EAX]
+
+	PUSH EAX  ;average input num 
+	PUSH EBX  ;temp string
+	CALL ConvertNumtoASCII
+
+	mDisplayString numString
+
+	POPAD
+	ret 8
+
+DisplayAverage ENDP
 
 END main

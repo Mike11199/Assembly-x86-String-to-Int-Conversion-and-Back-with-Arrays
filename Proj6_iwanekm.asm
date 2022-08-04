@@ -57,6 +57,7 @@ display_1			BYTE		"You entered the following numbers: ",0
 display_2			BYTE		"The sum offset these numbers is: ",0 
 display_3			BYTE		"The rounded average is: ",0 
 
+
 .code
 main PROC
 
@@ -431,75 +432,74 @@ ConvertASCIItoNum ENDP
 
 ConvertNumtoASCII PROC
 	
-	LOCAL numText:BYTE 
+	LOCAL num:BYTE 
 	PUSHAD
 
-	mov EAX, [EBP + 8]		;whole EAX register
-	mov EBX, [EBP + 12]		;output variable
+	mov EAX, [EBP + 8]		;this will be temp string for output
+	mov EBX, [EBP + 12]		;this will input number
 
-	mov numText, AL			;technically comparing AL here
+	mov	num, EBX
 
-
-	cmp numText, 48
+	cmp num, 0
 	jz _zero
-	cmp numText, 49
+	cmp num, 1
 	jz _one
-	cmp numText, 50
+	cmp num, 2
 	jz _two
-	cmp numText, 51
+	cmp num, 3
 	jz _three
-	cmp numText, 52
+	cmp num, 4
 	jz _four
-	cmp numText, 53
+	cmp num, 5
 	jz _five
-	cmp numText, 54
+	cmp num, 6
 	jz _six
-	cmp numText, 55
+	cmp num, 7
 	jz _seven
-	cmp numText, 56
+	cmp num, 8
 	jz _eight
-	cmp numText, 57
+	cmp num, 9
 	jz _nine
 
 
 _zero:
-	mov EAX, 0
+	mov EAX, 48 
 	jmp _return
 
 _one:
-	mov EAX, 1
+	mov EAX, 49 
 	jmp _return
 
 _two:
-	mov EAX, 2
+	mov EAX, 50 
 	jmp _return
 
 _three:
-	mov EAX, 3
+	mov EAX, 51 
 	jmp _return
 
 _four:
-	mov EAX, 4
+	mov EAX, 52
 	jmp _return
 
 _five:
-	mov EAX, 5
+	mov EAX, 53 
 	jmp _return
 
 _six:
-	mov EAX, 6
+	mov EAX, 54 
 	jmp _return
 
 _seven:
-	mov EAX, 7
+	mov EAX, 55 
 	jmp _return
 
 _eight:
-	mov EAX, 8
+	mov EAX, 56
 	jmp _return
 
 _nine:
-	mov EAX, 9
+	mov EAX, 57 
 	jmp _return
 
 
@@ -511,5 +511,16 @@ _return:
 	ret 8
 
 ConvertNumtoASCII ENDP
+
+
+
+CalculateSum PROC
+
+
+CalculateSum ENDP
+
+
+
+
 
 END main

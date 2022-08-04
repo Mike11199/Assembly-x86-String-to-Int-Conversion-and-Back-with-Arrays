@@ -43,12 +43,13 @@ program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program
 userString			BYTE		50 DUP(?)			;10 digit string, +1 for + or neg sign; +1 for null terminator
 userString_len		DWORD		?
 temp_num			SDWORD		?
-temp_string			DWORD		?
+temp_string			BYTE		50 DUP(?)
 userString_max_len	DWORD		LENGTHOF userString
 num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
 IntegerArray		SDWORD		10 DUP(?)
 IntegerArray_len	DWORD		0 ;num elements
 IntegerArray_size	DWORD		SIZEOF IntegerArray	   ;num bytes
+StringArray			SDWORD		10 DUP(?)
 Error_no_input		BYTE		"Error!  You didn't enter in any numbers.",0 
 Error_char_num		BYTE		"Error!  You can only enter numbers, and the plus or minus sign.",0 
 Error_sign_use		BYTE		"Error!  You can only enter the plus or minus sign at the beginning of the number.",0 
@@ -99,6 +100,11 @@ LOOP _InputNumberLoop
 
 
 	mDisplayString OFFSET display_1
+	PUSH    OFFSET temp_string
+	PUSH    OFFSET StringArray
+	PUSH    OFFSET IntegerArray_len
+	PUSH    OFFSET IntegerArray
+	CALL WriteVal
 
 	mDisplayString OFFSET display_2	
 
@@ -317,24 +323,6 @@ _storeNumtoArray:
 ReadVal ENDP
 
 
-
-WriteVal PROC
-
-
-
-
-
-
-
-
-
-
-
-
-WriteVal ENDP
-
-
-
 getStringLen PROC
 	
 	LOCAL StringLen:DWORD
@@ -457,83 +445,130 @@ ConvertASCIItoNum ENDP
 
 ConvertNumtoASCII PROC
 	
-	LOCAL num:DWORD 
+	 ; parameter order:  temp string, integer value
+
+	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, lastElementFlag:DWORD
 	PUSHAD
 
-	mov EAX, [EBP + 8]		;this will be temp string for output
-	mov EBX, [EBP + 12]		;this will input number
+	mov EDI, [EBP + 12]		; temp string offset from stack
+	mov EAX, [EBP + 8]		; integer from stack
 
-	mov	num, EBX
+	mov	num, EAX
+	mov lastElementFlag, 0
 
+_MainConversionLoop:
 	;need to repeatedly divide by 10, multiply by zeros until no remainder left, then reverse string array created.
 
+	mov EAX, num
+	CDQ 
+	mov ebx, 10
+	IDIV ebx
+	mov quotient, EAX
+	mov remainder, EDX
+
+	cmp remainder, 0
+	jg _remainderExists
+	cmp quotient, 0
+	jg _Quotient						; if no quotient and remainder
+	jmp _AddTERMINATOR
+
+
+_Quotient:
+	mov EAX, 0
+	mov num, EAX
+	jmp _startNumConversion
+
+_remainderExists:
+	mov EAX, remainder
+	mov num, EAX
+	jmp _startNumConversion
+
+
+_startNumConversion:
 	cmp num, 0
-	jz _zero
+	jz _zero_num
 	cmp num, 1
-	jz _one
+	jz _one_num
 	cmp num, 2
-	jz _two
+	jz _two_num
 	cmp num, 3
-	jz _three
+	jz _three_num
 	cmp num, 4
-	jz _four
+	jz _four_num
 	cmp num, 5
-	jz _five
+	jz _five_num
 	cmp num, 6
-	jz _six
+	jz _six_num
 	cmp num, 7
-	jz _seven
+	jz _seven_num
 	cmp num, 8
-	jz _eight
+	jz _eight_num
 	cmp num, 9
-	jz _nine
+	jz _nine_num
 
 
-_zero:
-	mov EAX, 48 
-	jmp _return
+_zero_num:
+	mov AL, 48 
+	jmp add_num_to_string
 
-_one:
-	mov EAX, 49 
-	jmp _return
+_one_num:
+	mov AL, 49 
+	jmp add_num_to_string
 
-_two:
-	mov EAX, 50 
-	jmp _return
+_two_num:
+	mov AL, 50 
+	jmp add_num_to_string
 
-_three:
-	mov EAX, 51 
-	jmp _return
+_three_num:
+	mov AL, 51 
+	jmp add_num_to_string
 
-_four:
-	mov EAX, 52
-	jmp _return
+_four_num:
+	mov AL, 52
+	jmp add_num_to_string
 
-_five:
-	mov EAX, 53 
-	jmp _return
+_five_num:
+	mov AL, 53 
+	jmp add_num_to_string
 
-_six:
-	mov EAX, 54 
-	jmp _return
+_six_num:
+	mov AL, 54 
+	jmp add_num_to_string
 
-_seven:
-	mov EAX, 55 
-	jmp _return
+_seven_num:
+	mov AL, 55 
+	jmp add_num_to_string
 
-_eight:
-	mov EAX, 56
-	jmp _return
+_eight_num:
+	mov AL, 56
+	jmp add_num_to_string
 
-_nine:
-	mov EAX, 57 
-	jmp _return
+_nine_num:
+	mov AL, 57 
+	jmp add_num_to_string
 
 
 
-_return:
-	mov [EBX],EAX	;move result to output variable
-	
+add_num_to_string:
+	mov [EDI], AL	;move result to output variable
+	add EDI, 2		;increment
+	mov EAX, quotient
+	mov num, EAX
+	jmp _MainConversionLoop
+
+
+_AddTERMINATOR:
+	mov	AL, 0
+	mov [EDI], AL	;move result to output variable
+
+
+
+_FinishConvertingNumtoString:
+
+	;NEED TO REVERSE STRING AFTERWARDS
+
+
+
 	POPAD
 	ret 8
 
@@ -679,5 +714,58 @@ DisplayAverage PROC
 	ret 8
 
 DisplayAverage ENDP
+
+
+	;PUSH    OFFSET temp_string
+	;PUSH    OFFSET StringArray
+	;PUSH    OFFSET IntegerArray_len
+	;PUSH    OFFSET IntegerArray
+
+
+WriteVal PROC
+
+	LOCAL num:SDWORD, numString:DWORD
+	PUSHAD
+
+	mov ECX, [EBP + 12]		; OFFSET integer array length from stack for LOOP counter
+	mov ESI, [EBP + 8]		; OFFSET integer array from stack
+	mov EDI, [EBP + 16]		; OFFSET string array from stack
+
+_convertLoop:
+
+	mov EAX, [EBP + 20]		; OFFSET temp_string RETURN VARIABLE from stack	
+	PUSH EAX				; push temp_string for ConvertNumtoASCII proc
+
+	mov EBX, [ESI]			; save value in EBX
+	PUSH EBX				; push int from integer array by value for ConvertNumtoASCII proc
+
+	CALL ConvertNumtoASCII  ; parameter order: return string, int by val
+
+	mov EAX, [EBP + 20]		; access return value from stack that ConvertNumtoASCII used with temp string
+	mov numString, EAX
+	
+	mov EAX, numString
+	mov [EDI], EAX
+	
+	add EDI, 4				; increment string array
+	add ESI, 4				; increment int array
+
+	LOOP _convertLoop
+	
+	
+	
+	POPAD
+	ret 12
+
+
+
+WriteVal ENDP
+
+
+
+
+
+
+
 
 END main

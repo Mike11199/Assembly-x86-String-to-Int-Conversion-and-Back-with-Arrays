@@ -56,8 +56,8 @@ Error_char_num		BYTE		"Error!  You can only enter numbers, and the plus or minus
 Error_sign_use		BYTE		"Error!  You can only enter the plus or minus sign at the beginning of the number.",0 
 Error_too_large		BYTE		"Error!  Your number must be between the ranges of-2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",0 
 display_1			BYTE		"You entered the following numbers: ",0 
-display_2			BYTE		"The sum offset these numbers is: ",0 
-display_3			BYTE		"The rounded average is: ",0 
+display_2			BYTE		"The sum of all numbers entered is: ",0 
+display_3			BYTE		"The rounded average of all numbers entered is: ",0 
 rounded_avg			SDWORD		?
 sum_all_nums		SDWORD		?
 comma_string		BYTE		", ",0
@@ -110,13 +110,16 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET IntegerArray
 	CALL WriteVal
 
+	CALL	CrLf
 	mDisplayString OFFSET display_2	
-	CALL	CrLf
 
-	mDisplayString OFFSET display_3	
 	CALL	CrLf
+	mDisplayString OFFSET display_3	
+
+
 	PUSH    OFFSET rounded_avg
-	PUSH	OFFSET	temp_num
+	PUSH    OFFSET temp_string
+	PUSH    OFFSET temp_string2
 	CALL DisplayAverage	
 
 
@@ -445,13 +448,13 @@ ConvertASCIItoNum ENDP
 
 ConvertNumtoASCII PROC
 	
-	 ; parameter order:  temp string, integer value, tempstring2
+	 ; parameter order:  integer value, temp string 1, tempstring2
 
 	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, newStringLen:DWORD
 	PUSHAD
 
 	mov ecx, 32
-	mov EDI, [EBP + 16]		; temp string2 offset from stack
+	mov EDI, [EBP + 12]		; temp string1 offset from stack
 
 _ClearString_one:
 	mov EAX, 0
@@ -461,8 +464,8 @@ _ClearString_one:
 
 
 	
-	mov ecx, 32
-	mov EDI, [EBP + 16]		; temp string offset from stack
+mov ecx, 32
+mov EDI, [EBP + 16]		; temp string 2 offset from stack
 
 _ClearString_two:
 	mov EAX, 0
@@ -730,27 +733,33 @@ CalculateAverage ENDP
 
 
 
-	;PUSH   OFFSET rounded_avg
-	;PUSH	OFFSET	temp_num
+	;PUSH    OFFSET rounded_avg
+	;PUSH    OFFSET temp_string
+	;PUSH    OFFSET temp_string2
 
 
 DisplayAverage PROC
 	LOCAL num:SDWORD, numString:DWORD
 	PUSHAD
+	
+	mov EAX, [EBP + 8]		; OFFSET temp_string 2
+	PUSH EAX
 
-	mov EBX, [EBP + 8]		; OFFSET temp_num
-	mov EBX, [EBX]
-	mov EAX, [EBP + 12]		; OFFSET rounded_avg
+	mov EAX, [EBP + 12]		; OFFSET temp_string 
+	PUSH EAX
+
+	mov EAX, [EBP + 16]		; OFFSET rounded_avg
 	mov EAX, [EAX]
+	PUSH EAX
 
-	PUSH EAX  ;average input num 
-	PUSH EBX  ;temp string
+
+	; parameter order:  integer value, temp string 1, tempstring2
 	CALL ConvertNumtoASCII
 
 	mDisplayString numString
 
 	POPAD
-	ret 8
+	ret 12
 
 DisplayAverage ENDP
 

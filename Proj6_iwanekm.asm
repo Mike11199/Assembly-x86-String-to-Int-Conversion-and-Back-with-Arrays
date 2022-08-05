@@ -61,6 +61,7 @@ display_3			BYTE		"The rounded average of all numbers entered is: ",0
 rounded_avg			SDWORD		?
 sum_all_nums		SDWORD		?
 comma_string		BYTE		", ",0
+goodbye				BYTE		"Thanks for using my program!  Goodbye.",0
 
 .code
 main PROC
@@ -136,6 +137,7 @@ LOOP _InputNumberLoop
 	CALL	setTextColorWhite	
 	CALL	CrLf
 	CALL	CrLf
+	mDisplayString OFFSET goodbye	
 	CALL	CrLf
 	CALL	CrLf
 

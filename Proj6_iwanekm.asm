@@ -10,7 +10,7 @@ TITLE Project 6 - String Primitives and Macros      (Proj6_iwanekm.asm)
 ;--------------------------------------------------------------------------------------------------------------------------------------------------
 ; Description: 
 ;--------------------------------------------------------------------------------------------------------------------------------------------------
-;			-This program 
+;			-This program allows user to enter in a series of numbers as strings.  It then conver
 
 ;--------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -38,7 +38,9 @@ ENDM
 
 .data
 program_info_1		BYTE		"Hello!  Welcome to my program:  String Primitives and Macros by Michael Iwanek",13,10,13,10,0
-program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program will then display each number entered, their average value, and sum.",13,10
+program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program will then display each number entered, their average value, and sum.",13,10,13,10
+					BYTE		"It will do this without using any Irvine procedures to read/write numbers, but will instead convert inputted strings to numbers using an algorithm.",13,10,13,10
+					BYTE		"After storing these numbers to an array, it will use another algorithm to convert these numbers back to strings to be displayed to the console.  ",13,10,13,10
 					BYTE		"Each number must be able to fit within a 32 bit register, or be between the values of -2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",13,10,13,10,0
 userString			BYTE		50 DUP(?)			;10 digit string, +1 for + or neg sign; +1 for null terminator
 userString_len		DWORD		?
@@ -94,12 +96,12 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET sum_all_nums
 	PUSH    OFFSET IntegerArray_len
 	PUSH    OFFSET IntegerArray
-	CALL CalculateSum	
+	CALL	CalculateSum	
 
 	PUSH    OFFSET rounded_avg
 	PUSH    OFFSET sum_all_nums
 	PUSH    OFFSET IntegerArray_len
-	CALL CalculateAverage	
+	CALL	CalculateAverage	
 
 	CALL	CrLf
 	mDisplayString OFFSET display_1
@@ -111,7 +113,7 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET StringArray
 	PUSH    OFFSET IntegerArray_len
 	PUSH    OFFSET IntegerArray
-	CALL WriteVal
+	CALL	WriteVal
 	CALL	setTextColorWhite		
 
 	CALL	CrLf
@@ -122,7 +124,7 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET sum_all_nums
 	PUSH    OFFSET temp_string
 	PUSH    OFFSET temp_string2
-	CALL DisplaySum
+	CALL	DisplaySum
 	CALL	setTextColorWhite	
 
 	CALL	CrLf
@@ -133,7 +135,7 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET rounded_avg
 	PUSH    OFFSET temp_string
 	PUSH    OFFSET temp_string2
-	CALL DisplayAverage	
+	CALL	DisplayAverage	
 	CALL	setTextColorWhite	
 	CALL	CrLf
 	CALL	CrLf
@@ -157,6 +159,7 @@ ReadVal PROC
 	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD
 	PUSHAD
 
+	mov sign, 1
 	mov eax, [EBP + 12]
 	mov StringRef, eax
 	mov eax, [EBP + 16]	
@@ -470,8 +473,10 @@ ConvertNumtoASCII PROC
 	
 	 ; parameter order:  integer value, temp string 1, tempstring2
 
-	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, newStringLen:DWORD
+	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, newStringLen:DWORD, negativeFlag:DWORD
 	PUSHAD
+
+	mov negativeFlag, 1
 
 	mov ecx, 32
 	mov EDI, [EBP + 12]		; temp string1 offset from stack
@@ -502,6 +507,18 @@ _ClearString_two:
 
 	mov	num, EAX
 	mov newStringLen, 0
+
+	;test if number is negative, if so we need to reverse it and add a negative sign in front
+	cmp EAX, 0
+	jl	_numIsNegativeInvert
+	jmp _MainConversionLoop
+
+
+_numIsNegativeInvert:
+	neg eax
+	mov num, eax
+	mov negativeFlag, 2
+
 
 
 _MainConversionLoop:
@@ -622,6 +639,15 @@ _FinishConvertingNumtoString:
 	dec ESI
 	mov EDI, [EBP + 16]		; temp string offset2 from stack
 	
+	cmp negativeFlag, 2
+	jz _addNegativeSignBeforeReversal
+	jmp _revLoop
+
+_addNegativeSignBeforeReversal:
+	mov EAX, 45
+	mov [EDI], EAX		; temp string offset2 from stack
+	add edi, 1
+
 _revLoop: ;reference StringManipulator.asm from canvas
 	STD
 	LODSB
@@ -700,14 +726,6 @@ CalculateAverage PROC
 	mul EBX
 	mov doubledRemainder, EAX
 
-	;test delete start
-	;mov EAX, quotient
-	;CALL WriteInt
-	;mov EAX, remainder
-	;CALL WriteInt
-	;mov EAX, doubledRemainder
-	;CALL WriteInt
-	;test delete end
 
 	cmp EAX, 0
 	jl	_testNegativeRounding
@@ -738,11 +756,6 @@ _saveValue:
 
 
 
-	;test delete start
-	;mov EAX, [EBP + 16]		; OFFSET rounded_avg
-	;mov EAX, [EAX]
-	;CALL WriteInt
-	;test delete end
 
 
 	POPAD

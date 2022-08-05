@@ -89,6 +89,7 @@ _InputNumberLoop:
 
 LOOP _InputNumberLoop
 
+	
 	PUSH    OFFSET sum_all_nums
 	PUSH    OFFSET IntegerArray_len
 	PUSH    OFFSET IntegerArray
@@ -99,9 +100,10 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET IntegerArray_len
 	CALL CalculateAverage	
 
-
+	CALL	CrLf
 	mDisplayString OFFSET display_1
 	CALL	CrLf
+	CALL	setTextColorGreen	
 	PUSH    OFFSET comma_string
 	PUSH    OFFSET temp_string2
 	PUSH    OFFSET temp_string
@@ -109,18 +111,34 @@ LOOP _InputNumberLoop
 	PUSH    OFFSET IntegerArray_len
 	PUSH    OFFSET IntegerArray
 	CALL WriteVal
+	CALL	setTextColorWhite		
 
+	CALL	CrLf
 	CALL	CrLf
 	mDisplayString OFFSET display_2	
+	CALL	setTextColorGreen	
+	CALL	CrLf
+	PUSH    OFFSET sum_all_nums
+	PUSH    OFFSET temp_string
+	PUSH    OFFSET temp_string2
+	CALL DisplaySum
+	CALL	setTextColorWhite	
 
 	CALL	CrLf
+	CALL	CrLf
 	mDisplayString OFFSET display_3	
-
-
+	CALL	setTextColorGreen	
+	CALL	CrLf
 	PUSH    OFFSET rounded_avg
 	PUSH    OFFSET temp_string
 	PUSH    OFFSET temp_string2
 	CALL DisplayAverage	
+	CALL	setTextColorWhite	
+	CALL	CrLf
+	CALL	CrLf
+	CALL	CrLf
+	CALL	CrLf
+
 
 
 
@@ -765,6 +783,33 @@ DisplayAverage PROC
 DisplayAverage ENDP
 
 
+DisplaySum PROC
+	LOCAL num:SDWORD, numString:DWORD
+	PUSHAD
+	
+	mov EAX, [EBP + 8]		; OFFSET temp_string 2
+	PUSH EAX
+
+	mov EAX, [EBP + 12]		; OFFSET temp_string 
+	PUSH EAX
+
+	mov EAX, [EBP + 16]		; OFFSET rounded_avg
+	mov EAX, [EAX]
+	PUSH EAX
+
+
+	; parameter order:  integer value, temp string 1, tempstring2
+	CALL ConvertNumtoASCII
+
+	mov EAX, [EBP + 8]
+	mDisplayString EAX
+
+	POPAD
+	ret 12
+
+DisplaySum ENDP
+
+
 	;PUSH    OFFSET temp_string2
 	;PUSH    OFFSET temp_string
 	;PUSH    OFFSET StringArray
@@ -798,9 +843,15 @@ _convertLoop:
 	mov EAX, [EBP + 24]		; access return value from stack that ConvertNumtoASCII used with temp string
 	
 	mDisplayString EAX
-	
+
+	cmp ECX, 1
+	jz _noComma
+
+_writeComma:	
 	mov EAX, [EBP + 28]		;comma string
 	mDisplayString EAX
+
+_noComma:
 
 	add ESI, 4				; increment int array
 
@@ -816,6 +867,34 @@ _convertLoop:
 WriteVal ENDP
 
 
+
+; =======================================================================================================================================================
+; Name:	setTextColorWhite
+; Procedure to change console text to white.
+; Preconditions: none
+; Postconditions: none
+; Receives: none
+; Returns:  none
+; =======================================================================================================================================================
+setTextColorWhite PROC
+	mov		eax, white 
+	call	SetTextColor
+	ret
+setTextColorWhite ENDP
+
+; =======================================================================================================================================================
+; Name:	setTextColorGreen
+; Procedure to change console text to green.
+; Preconditions: none
+; Postconditions: none
+; Receives: none
+; Returns:  none
+; =======================================================================================================================================================
+setTextColorGreen PROC	
+	mov		eax, green 
+	call	SetTextColor
+	ret
+setTextColorGreen ENDP
 
 
 

@@ -17,6 +17,23 @@ TITLE Project 6 - String Primitives and Macros      (Proj6_iwanekm.asm)
 
 INCLUDE Irvine32.inc
 
+
+; =======================================================================================================================================================
+; Name:				mGetString
+;
+; Description:		This macro gets 
+;
+; Preconditions:	none
+;
+; Postconditions:	Register EDX is NOT changed since the USES keyword (ALLOWED TO USE PER INSTRUCTIONS) preserves the EDX register.  This is 
+;					similar to pushing EDX in the procedure and then popping it back into EDX before retuning to the calling funciton.
+;
+; Receives:			Addresses of strings program_info_1, program_info_2, program_info_3, program_info_4, program_info_5, and divider that were
+;					declared in the data segment.  As addresses were received, this means the strings were passed by reference.
+;
+; Returns:			nothing
+;
+; =======================================================================================================================================================
 mGetString	MACRO	buffer, buffer_size
 	PUSH  EDX				;Save EDX register
 	PUSH  ECX

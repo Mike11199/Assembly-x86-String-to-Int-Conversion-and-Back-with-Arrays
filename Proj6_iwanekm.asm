@@ -756,7 +756,8 @@ DisplayAverage PROC
 	; parameter order:  integer value, temp string 1, tempstring2
 	CALL ConvertNumtoASCII
 
-	mDisplayString numString
+	mov EAX, [EBP + 8]
+	mDisplayString EAX
 
 	POPAD
 	ret 12

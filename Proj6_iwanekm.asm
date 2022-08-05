@@ -179,7 +179,7 @@ ReadVal PROC
 	;	1) Invoke the mGetString macro to get user input in the form of a string of digits	
 	;***************************************************************************************************************************
 
-	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD, OutputString:DWORD
+	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD
 	PUSHAD
 
 	mov sign, 1
@@ -738,7 +738,7 @@ CalculateSum ENDP
 	;PUSH    OFFSET IntegerArray_len
 
 CalculateAverage PROC
-	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledRemainder:SDWORD, divisor:DWORD, dividend: SDWORD
+	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, divisor:DWORD, dividend: SDWORD ;,doubledRemainder:SDWORD, 
 	PUSHAD
 
 	mov num, 0
@@ -818,14 +818,16 @@ DisplayAverage PROC
 
 	mov EAX, [EBP + 16]		; OFFSET rounded_avg
 	mov EAX, [EAX]
-	PUSH EAX
+	mov num, EAX
+	PUSH num
 
 
 	; parameter order:  integer value, temp string 1, tempstring2
 	CALL ConvertNumtoASCII
 
 	mov EAX, [EBP + 8]
-	mDisplayString EAX
+	mov numString, EAX
+	mDisplayString numString
 
 	POPAD
 	ret 12
@@ -845,14 +847,16 @@ DisplaySum PROC
 
 	mov EAX, [EBP + 16]		; OFFSET rounded_avg
 	mov EAX, [EAX]
-	PUSH EAX
+	mov num, EAX
+	PUSH num
 
 
 	; parameter order:  integer value, temp string 1, tempstring2
 	CALL ConvertNumtoASCII
-
+	
 	mov EAX, [EBP + 8]
-	mDisplayString EAX
+	mov numString, EAX
+	mDisplayString numString
 
 	POPAD
 	ret 12
@@ -869,13 +873,13 @@ DisplaySum ENDP
 
 WriteVal PROC
 
-	LOCAL num:SDWORD, numStringOffset:DWORD
+	LOCAL num:SDWORD
 	PUSHAD
 
 	mov ECX, [EBP + 12]		; OFFSET integer array length from stack for LOOP counter
 	mov ECX, [ECX]
 	mov ESI, [EBP + 8]		; OFFSET integer array from stack
-	;mov EDI, [EBP + 16]		; OFFSET string array from stack
+	;mov EDI, [EBP + 16]	; OFFSET string array from stack
 
 _convertLoop:
 
@@ -892,7 +896,8 @@ _convertLoop:
 
 	mov EAX, [EBP + 24]		; access return value from stack that ConvertNumtoASCII used with temp string
 	
-	mDisplayString EAX
+	mov num, EAX
+	mDisplayString num
 
 	cmp ECX, 1
 	jz _noComma

@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:49:43
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:59:46
 <Project 6 - String Primitives and Macros      (Proj6_iwanek  Page 1 - 1
 
 
@@ -375,15 +375,15 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:49:43
  0000008F  E8 00000000 E     1		CALL  WriteString
  00000094  5A		     1		POP   EDX				;Restore EDX
  00000095  E8 00000000 E		CALL	CrLf
- 0000009A  E8 0000057D			CALL	setTextColorGreen	
+ 0000009A  E8 00000584			CALL	setTextColorGreen	
  0000009F  68 00000547 R		PUSH    OFFSET comma_string
  000000A4  68 000002EF R		PUSH    OFFSET temp_string2
  000000A9  68 000002CF R		PUSH    OFFSET temp_string
  000000AE  68 00000379 R		PUSH    OFFSET StringArray
  000000B3  68 00000371 R		PUSH    OFFSET IntegerArray_len
  000000B8  68 00000349 R		PUSH    OFFSET IntegerArray
- 000000BD  E8 00000509			CALL	WriteVal
- 000000C2  E8 0000054A			CALL	setTextColorWhite		
+ 000000BD  E8 00000510			CALL	WriteVal
+ 000000C2  E8 00000551			CALL	setTextColorWhite		
 
  000000C7  E8 00000000 E		CALL	CrLf
  000000CC  E8 00000000 E		CALL	CrLf
@@ -392,13 +392,13 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:49:43
  000000D2  BA 000004EB R     1		MOV   EDX, OFFSET display_2
  000000D7  E8 00000000 E     1		CALL  WriteString
  000000DC  5A		     1		POP   EDX				;Restore EDX
- 000000DD  E8 0000053A			CALL	setTextColorGreen	
+ 000000DD  E8 00000541			CALL	setTextColorGreen	
  000000E2  E8 00000000 E		CALL	CrLf
  000000E7  68 00000543 R		PUSH    OFFSET sum_all_nums
  000000EC  68 000002CF R		PUSH    OFFSET temp_string
  000000F1  68 000002EF R		PUSH    OFFSET temp_string2
- 000000F6  E8 000004A5			CALL	DisplaySum
- 000000FB  E8 00000511			CALL	setTextColorWhite	
+ 000000F6  E8 000004AC			CALL	DisplaySum
+ 000000FB  E8 00000518			CALL	setTextColorWhite	
 
  00000100  E8 00000000 E		CALL	CrLf
  00000105  E8 00000000 E		CALL	CrLf
@@ -407,13 +407,13 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:49:43
  0000010B  BA 0000050F R     1		MOV   EDX, OFFSET display_3
  00000110  E8 00000000 E     1		CALL  WriteString
  00000115  5A		     1		POP   EDX				;Restore EDX
- 00000116  E8 00000501			CALL	setTextColorGreen	
+ 00000116  E8 00000508			CALL	setTextColorGreen	
  0000011B  E8 00000000 E		CALL	CrLf
  00000120  68 0000053F R		PUSH    OFFSET rounded_avg
  00000125  68 000002CF R		PUSH    OFFSET temp_string
  0000012A  68 000002EF R		PUSH    OFFSET temp_string2
- 0000012F  E8 00000441			CALL	DisplayAverage	
- 00000134  E8 000004D8			CALL	setTextColorWhite	
+ 0000012F  E8 00000448			CALL	DisplayAverage	
+ 00000134  E8 000004DF			CALL	setTextColorWhite	
  00000139  E8 00000000 E		CALL	CrLf
  0000013E  E8 00000000 E		CALL	CrLf
 					mDisplayString OFFSET goodbye	
@@ -1046,66 +1046,68 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:49:43
 					;PUSH    OFFSET IntegerArray_len
 
  0000051D			CalculateAverage PROC
-					LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledRemainder:SDWORD
+					LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledRemainder:SDWORD, divisor:DWORD, dividend: SDWORD
  0000051D  55		   *	    push   ebp
  0000051E  8B EC	   *	    mov    ebp, esp
- 00000520  83 C4 F0	   *	    add    esp, 0FFFFFFF0h
+ 00000520  83 C4 E8	   *	    add    esp, 0FFFFFFE8h
  00000523  60				PUSHAD
 
  00000524  C7 45 FC			mov num, 0
 	   00000000
  0000052B  8B 4D 08			mov ECX, [EBP + 8]		; OFFSET IntegerArray_len
  0000052E  8B 09			mov ECX, [ECX]
- 00000530  8B 45 0C			mov EAX, [EBP + 12]		; OFFSET sum_all_nums
- 00000533  8B 00			mov EAX, [EAX]
- 00000535  99				CDQ
- 00000536  F7 F9			IDIV ECX
+ 00000530  89 4D EC			mov divisor, ECX
+ 00000533  8B 45 0C			mov EAX, [EBP + 12]		; OFFSET sum_all_nums
+ 00000536  8B 00			mov EAX, [EAX]
+ 00000538  89 45 E8			mov dividend, EAX
+ 0000053B  99				CDQ
+ 0000053C  F7 F9			IDIV ECX
 
- 00000538  89 45 F8			mov quotient, EAX
- 0000053B  89 55 F4			mov remainder, EDX
+ 0000053E  89 45 F8			mov quotient, EAX
+ 00000541  89 55 F4			mov remainder, EDX
 					
- 0000053E  8B 45 F4			mov EAX, remainder
- 00000541  BB 00000002			mov EBX, 2
- 00000546  F7 E3			mul EBX
- 00000548  89 45 F0			mov doubledRemainder, EAX
+ 00000544  8B 45 F4			mov EAX, remainder
+ 00000547  BB 00000002			mov EBX, 2
+ 0000054C  F7 E3			mul EBX
+ 0000054E  89 45 F0			mov doubledRemainder, EAX
 
 
- 0000054B  83 F8 00	cmp EAX, 0
- 0000054E  7C 02			jl	_testNegativeRounding
- 00000550  EB 07			jmp _testPositiveRounding
+ 00000551  83 7D E8 00			cmp dividend, 0
+ 00000555  7C 02			jl	_testNegativeRounding
+ 00000557  EB 07			jmp _testPositiveRounding
 
- 00000552			_testNegativeRounding:
- 00000552  3B 45 F8			cmp EAX, quotient
- 00000555  7E 0E			jle _roundNegativeDown
- 00000557  EB 0F			jmp _saveValue
+ 00000559			_testNegativeRounding:
+ 00000559  3B 45 E8			cmp EAX, dividend
+ 0000055C  7E 0E			jle _roundNegativeDown
+ 0000055E  EB 0F			jmp _saveValue
 
- 00000559			_testPositiveRounding:
- 00000559  3B 45 F8			cmp EAX, quotient
- 0000055C  7D 02			jge _roundPositiveUp
- 0000055E  EB 08			jmp _saveValue
+ 00000560			_testPositiveRounding:
+ 00000560  3B 45 E8			cmp EAX, dividend
+ 00000563  7D 02			jge _roundPositiveUp
+ 00000565  EB 08			jmp _saveValue
 
- 00000560			_roundPositiveUp:	
- 00000560  FF 45 F8			inc quotient
- 00000563  EB 03			jmp _saveValue
+ 00000567			_roundPositiveUp:	
+ 00000567  FF 45 F8			inc quotient
+ 0000056A  EB 03			jmp _saveValue
 
- 00000565			_roundNegativeDown:
- 00000565  FF 4D F8			dec quotient
+ 0000056C			_roundNegativeDown:
+ 0000056C  FF 4D F8			dec quotient
 
- 00000568			_saveValue:
+ 0000056F			_saveValue:
 
- 00000568  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
- 0000056B  8B 5D F8			mov EBX, quotient
- 0000056E  89 18			mov [EAX], ebx	
-
-
+ 0000056F  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
+ 00000572  8B 5D F8			mov EBX, quotient
+ 00000575  89 18			mov [EAX], ebx	
 
 
 
- 00000570  61				POPAD
- 00000571  C9		   *	    leave  
- 00000572  C2 000C			ret 12
 
- 00000575			CalculateAverage ENDP
+
+ 00000577  61				POPAD
+ 00000578  C9		   *	    leave  
+ 00000579  C2 000C			ret 12
+
+ 0000057C			CalculateAverage ENDP
 
 
 
@@ -1115,78 +1117,78 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:49:43
 					;PUSH    OFFSET temp_string2
 
 
- 00000575			DisplayAverage PROC
+ 0000057C			DisplayAverage PROC
 					LOCAL num:SDWORD, numString:DWORD
- 00000575  55		   *	    push   ebp
- 00000576  8B EC	   *	    mov    ebp, esp
- 00000578  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
- 0000057B  60				PUSHAD
+ 0000057C  55		   *	    push   ebp
+ 0000057D  8B EC	   *	    mov    ebp, esp
+ 0000057F  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
+ 00000582  60				PUSHAD
 					
- 0000057C  8B 45 08			mov EAX, [EBP + 8]		; OFFSET temp_string 2
- 0000057F  50				PUSH EAX
+ 00000583  8B 45 08			mov EAX, [EBP + 8]		; OFFSET temp_string 2
+ 00000586  50				PUSH EAX
 
- 00000580  8B 45 0C			mov EAX, [EBP + 12]		; OFFSET temp_string 
- 00000583  50				PUSH EAX
+ 00000587  8B 45 0C			mov EAX, [EBP + 12]		; OFFSET temp_string 
+ 0000058A  50				PUSH EAX
 
- 00000584  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
- 00000587  8B 00			mov EAX, [EAX]
- 00000589  50				PUSH EAX
+ 0000058B  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
+ 0000058E  8B 00			mov EAX, [EAX]
+ 00000590  50				PUSH EAX
 
 
 					; parameter order:  integer value, temp string 1, tempstring2
- 0000058A  E8 FFFFFE27			CALL ConvertNumtoASCII
+ 00000591  E8 FFFFFE20			CALL ConvertNumtoASCII
 
- 0000058F  8B 45 08			mov EAX, [EBP + 8]
+ 00000596  8B 45 08			mov EAX, [EBP + 8]
 					mDisplayString EAX
- 00000592  52		     1		PUSH  EDX				;Save EDX register
- 00000593  8B D0	     1		MOV   EDX, EAX
- 00000595  E8 00000000 E     1		CALL  WriteString
- 0000059A  5A		     1		POP   EDX				;Restore EDX
+ 00000599  52		     1		PUSH  EDX				;Save EDX register
+ 0000059A  8B D0	     1		MOV   EDX, EAX
+ 0000059C  E8 00000000 E     1		CALL  WriteString
+ 000005A1  5A		     1		POP   EDX				;Restore EDX
 
- 0000059B  61				POPAD
- 0000059C  C9		   *	    leave  
- 0000059D  C2 000C			ret 12
+ 000005A2  61				POPAD
+ 000005A3  C9		   *	    leave  
+ 000005A4  C2 000C			ret 12
 
- 000005A0			DisplayAverage ENDP
-Proj6_iwanekm.asm(798) : warning A6004:procedure argument or local not referenced : num
-Proj6_iwanekm.asm(798) : warning A6004:procedure argument or local not referenced : numString
+ 000005A7			DisplayAverage ENDP
+Proj6_iwanekm.asm(800) : warning A6004:procedure argument or local not referenced : num
+Proj6_iwanekm.asm(800) : warning A6004:procedure argument or local not referenced : numString
 
 
- 000005A0			DisplaySum PROC
+ 000005A7			DisplaySum PROC
 					LOCAL num:SDWORD, numString:DWORD
- 000005A0  55		   *	    push   ebp
- 000005A1  8B EC	   *	    mov    ebp, esp
- 000005A3  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
- 000005A6  60				PUSHAD
+ 000005A7  55		   *	    push   ebp
+ 000005A8  8B EC	   *	    mov    ebp, esp
+ 000005AA  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
+ 000005AD  60				PUSHAD
 					
- 000005A7  8B 45 08			mov EAX, [EBP + 8]		; OFFSET temp_string 2
- 000005AA  50				PUSH EAX
+ 000005AE  8B 45 08			mov EAX, [EBP + 8]		; OFFSET temp_string 2
+ 000005B1  50				PUSH EAX
 
- 000005AB  8B 45 0C			mov EAX, [EBP + 12]		; OFFSET temp_string 
- 000005AE  50				PUSH EAX
+ 000005B2  8B 45 0C			mov EAX, [EBP + 12]		; OFFSET temp_string 
+ 000005B5  50				PUSH EAX
 
- 000005AF  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
- 000005B2  8B 00			mov EAX, [EAX]
- 000005B4  50				PUSH EAX
+ 000005B6  8B 45 10			mov EAX, [EBP + 16]		; OFFSET rounded_avg
+ 000005B9  8B 00			mov EAX, [EAX]
+ 000005BB  50				PUSH EAX
 
 
 					; parameter order:  integer value, temp string 1, tempstring2
- 000005B5  E8 FFFFFDFC			CALL ConvertNumtoASCII
+ 000005BC  E8 FFFFFDF5			CALL ConvertNumtoASCII
 
- 000005BA  8B 45 08			mov EAX, [EBP + 8]
+ 000005C1  8B 45 08			mov EAX, [EBP + 8]
 					mDisplayString EAX
- 000005BD  52		     1		PUSH  EDX				;Save EDX register
- 000005BE  8B D0	     1		MOV   EDX, EAX
- 000005C0  E8 00000000 E     1		CALL  WriteString
- 000005C5  5A		     1		POP   EDX				;Restore EDX
+ 000005C4  52		     1		PUSH  EDX				;Save EDX register
+ 000005C5  8B D0	     1		MOV   EDX, EAX
+ 000005C7  E8 00000000 E     1		CALL  WriteString
+ 000005CC  5A		     1		POP   EDX				;Restore EDX
 
- 000005C6  61				POPAD
- 000005C7  C9		   *	    leave  
- 000005C8  C2 000C			ret 12
+ 000005CD  61				POPAD
+ 000005CE  C9		   *	    leave  
+ 000005CF  C2 000C			ret 12
 
- 000005CB			DisplaySum ENDP
-Proj6_iwanekm.asm(825) : warning A6004:procedure argument or local not referenced : num
-Proj6_iwanekm.asm(825) : warning A6004:procedure argument or local not referenced : numString
+ 000005D2			DisplaySum ENDP
+Proj6_iwanekm.asm(827) : warning A6004:procedure argument or local not referenced : num
+Proj6_iwanekm.asm(827) : warning A6004:procedure argument or local not referenced : numString
 
 
 					;PUSH    OFFSET temp_string2
@@ -1196,68 +1198,68 @@ Proj6_iwanekm.asm(825) : warning A6004:procedure argument or local not reference
 					;PUSH    OFFSET IntegerArray
 
 
- 000005CB			WriteVal PROC
+ 000005D2			WriteVal PROC
 
 					LOCAL num:SDWORD, numStringOffset:DWORD
- 000005CB  55		   *	    push   ebp
- 000005CC  8B EC	   *	    mov    ebp, esp
- 000005CE  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
- 000005D1  60				PUSHAD
+ 000005D2  55		   *	    push   ebp
+ 000005D3  8B EC	   *	    mov    ebp, esp
+ 000005D5  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
+ 000005D8  60				PUSHAD
 
- 000005D2  8B 4D 0C			mov ECX, [EBP + 12]		; OFFSET integer array length from stack for LOOP counter
- 000005D5  8B 09			mov ECX, [ECX]
- 000005D7  8B 75 08			mov ESI, [EBP + 8]		; OFFSET integer array from stack
+ 000005D9  8B 4D 0C			mov ECX, [EBP + 12]		; OFFSET integer array length from stack for LOOP counter
+ 000005DC  8B 09			mov ECX, [ECX]
+ 000005DE  8B 75 08			mov ESI, [EBP + 8]		; OFFSET integer array from stack
 					;mov EDI, [EBP + 16]		; OFFSET string array from stack
 
- 000005DA			_convertLoop:
+ 000005E1			_convertLoop:
 
- 000005DA  8B 45 18			mov EAX, [EBP + 24]		; OFFSET temp_string2 RETURN VARIABLE from stack	
- 000005DD  50				PUSH EAX				; push temp_string for ConvertNumtoASCII proc
+ 000005E1  8B 45 18			mov EAX, [EBP + 24]		; OFFSET temp_string2 RETURN VARIABLE from stack	
+ 000005E4  50				PUSH EAX				; push temp_string for ConvertNumtoASCII proc
 
- 000005DE  8B 45 14			mov EAX, [EBP + 20]		; OFFSET temp_string RETURN VARIABLE from stack	
- 000005E1  50				PUSH EAX				; push temp_string for ConvertNumtoASCII proc
+ 000005E5  8B 45 14			mov EAX, [EBP + 20]		; OFFSET temp_string RETURN VARIABLE from stack	
+ 000005E8  50				PUSH EAX				; push temp_string for ConvertNumtoASCII proc
 
- 000005E2  8B 1E			mov EBX, [ESI]			; save value in EBX
- 000005E4  53				PUSH EBX				; push int from integer array by value for ConvertNumtoASCII proc
+ 000005E9  8B 1E			mov EBX, [ESI]			; save value in EBX
+ 000005EB  53				PUSH EBX				; push int from integer array by value for ConvertNumtoASCII proc
 
- 000005E5  E8 FFFFFDCC			CALL ConvertNumtoASCII  ; parameter order: return string, int by val
+ 000005EC  E8 FFFFFDC5			CALL ConvertNumtoASCII  ; parameter order: return string, int by val
 
- 000005EA  8B 45 18			mov EAX, [EBP + 24]		; access return value from stack that ConvertNumtoASCII used with temp string
+ 000005F1  8B 45 18			mov EAX, [EBP + 24]		; access return value from stack that ConvertNumtoASCII used with temp string
 					
 					mDisplayString EAX
- 000005ED  52		     1		PUSH  EDX				;Save EDX register
- 000005EE  8B D0	     1		MOV   EDX, EAX
- 000005F0  E8 00000000 E     1		CALL  WriteString
- 000005F5  5A		     1		POP   EDX				;Restore EDX
+ 000005F4  52		     1		PUSH  EDX				;Save EDX register
+ 000005F5  8B D0	     1		MOV   EDX, EAX
+ 000005F7  E8 00000000 E     1		CALL  WriteString
+ 000005FC  5A		     1		POP   EDX				;Restore EDX
 
- 000005F6  83 F9 01			cmp ECX, 1
- 000005F9  74 0C			jz _noComma
+ 000005FD  83 F9 01			cmp ECX, 1
+ 00000600  74 0C			jz _noComma
 
- 000005FB			_writeComma:	
- 000005FB  8B 45 1C			mov EAX, [EBP + 28]		;comma string
+ 00000602			_writeComma:	
+ 00000602  8B 45 1C			mov EAX, [EBP + 28]		;comma string
 					mDisplayString EAX
- 000005FE  52		     1		PUSH  EDX				;Save EDX register
- 000005FF  8B D0	     1		MOV   EDX, EAX
- 00000601  E8 00000000 E     1		CALL  WriteString
- 00000606  5A		     1		POP   EDX				;Restore EDX
+ 00000605  52		     1		PUSH  EDX				;Save EDX register
+ 00000606  8B D0	     1		MOV   EDX, EAX
+ 00000608  E8 00000000 E     1		CALL  WriteString
+ 0000060D  5A		     1		POP   EDX				;Restore EDX
 
- 00000607			_noComma:
+ 0000060E			_noComma:
 
- 00000607  83 C6 04			add ESI, 4				; increment int array
+ 0000060E  83 C6 04			add ESI, 4				; increment int array
 
- 0000060A  E2 CE			LOOP _convertLoop
+ 00000611  E2 CE			LOOP _convertLoop
 					
 					
 					
- 0000060C  61				POPAD
- 0000060D  C9		   *	    leave  
- 0000060E  C2 0018			ret 24
+ 00000613  61				POPAD
+ 00000614  C9		   *	    leave  
+ 00000615  C2 0018			ret 24
 
 
 
- 00000611			WriteVal ENDP
-Proj6_iwanekm.asm(882) : warning A6004:procedure argument or local not referenced : num
-Proj6_iwanekm.asm(882) : warning A6004:procedure argument or local not referenced : numStringOffset
+ 00000618			WriteVal ENDP
+Proj6_iwanekm.asm(884) : warning A6004:procedure argument or local not referenced : num
+Proj6_iwanekm.asm(884) : warning A6004:procedure argument or local not referenced : numStringOffset
 
 
 
@@ -1269,11 +1271,11 @@ Proj6_iwanekm.asm(882) : warning A6004:procedure argument or local not reference
 				; Receives: none
 				; Returns:  none
 				; =======================================================================================================================================================
- 00000611			setTextColorWhite PROC
- 00000611  B8 0000000F			mov		eax, white 
- 00000616  E8 00000000 E		call	SetTextColor
- 0000061B  C3				ret
- 0000061C			setTextColorWhite ENDP
+ 00000618			setTextColorWhite PROC
+ 00000618  B8 0000000F			mov		eax, white 
+ 0000061D  E8 00000000 E		call	SetTextColor
+ 00000622  C3				ret
+ 00000623			setTextColorWhite ENDP
 
 				; =======================================================================================================================================================
 				; Name:	setTextColorGreen
@@ -1283,11 +1285,11 @@ Proj6_iwanekm.asm(882) : warning A6004:procedure argument or local not reference
 				; Receives: none
 				; Returns:  none
 				; =======================================================================================================================================================
- 0000061C			setTextColorGreen PROC	
- 0000061C  B8 00000002			mov		eax, green 
- 00000621  E8 00000000 E		call	SetTextColor
- 00000626  C3				ret
- 00000627			setTextColorGreen ENDP
+ 00000623			setTextColorGreen PROC	
+ 00000623  B8 00000002			mov		eax, green 
+ 00000628  E8 00000000 E		call	SetTextColor
+ 0000062D  C3				ret
+ 0000062E			setTextColorGreen ENDP
 
 
 
@@ -1295,7 +1297,7 @@ Proj6_iwanekm.asm(882) : warning A6004:procedure argument or local not reference
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:49:43
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/04/22 18:59:46
 <Project 6 - String Primitives and Macros      (Proj6_iwanek  Symbols 2 - 1
 
 
@@ -1398,23 +1400,25 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 00000571 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000627 Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000062E Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
-CalculateAverage . . . . . . . .	P Near	 0000051D _TEXT	Length= 00000058 Public STDCALL
+CalculateAverage . . . . . . . .	P Near	 0000051D _TEXT	Length= 0000005F Public STDCALL
   num  . . . . . . . . . . . . .	DWord	 bp - 00000004
   quotient . . . . . . . . . . .	DWord	 bp - 00000008
   remainder  . . . . . . . . . .	DWord	 bp - 0000000C
   doubledRemainder . . . . . . .	DWord	 bp - 00000010
-  _testNegativeRounding  . . . .	L Near	 00000552 _TEXT	
-  _testPositiveRounding  . . . .	L Near	 00000559 _TEXT	
-  _roundPositiveUp . . . . . . .	L Near	 00000560 _TEXT	
-  _roundNegativeDown . . . . . .	L Near	 00000565 _TEXT	
-  _saveValue . . . . . . . . . .	L Near	 00000568 _TEXT	
+  divisor  . . . . . . . . . . .	DWord	 bp - 00000014
+  dividend . . . . . . . . . . .	DWord	 bp - 00000018
+  _testNegativeRounding  . . . .	L Near	 00000559 _TEXT	
+  _testPositiveRounding  . . . .	L Near	 00000560 _TEXT	
+  _roundPositiveUp . . . . . . .	L Near	 00000567 _TEXT	
+  _roundNegativeDown . . . . . .	L Near	 0000056C _TEXT	
+  _saveValue . . . . . . . . . .	L Near	 0000056F _TEXT	
 CalculateSum . . . . . . . . . .	P Near	 000004EB _TEXT	Length= 00000032 Public STDCALL
   num  . . . . . . . . . . . . .	DWord	 bp - 00000004
   _SumLoop . . . . . . . . . . .	L Near	 00000501 _TEXT	
@@ -1466,10 +1470,10 @@ CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-DisplayAverage . . . . . . . . .	P Near	 00000575 _TEXT	Length= 0000002B Public STDCALL
+DisplayAverage . . . . . . . . .	P Near	 0000057C _TEXT	Length= 0000002B Public STDCALL
   num  . . . . . . . . . . . . .	DWord	 bp - 00000004
   numString  . . . . . . . . . .	DWord	 bp - 00000008
-DisplaySum . . . . . . . . . . .	P Near	 000005A0 _TEXT	Length= 0000002B Public STDCALL
+DisplaySum . . . . . . . . . . .	P Near	 000005A7 _TEXT	Length= 0000002B Public STDCALL
   num  . . . . . . . . . . . . .	DWord	 bp - 00000004
   numString  . . . . . . . . . .	DWord	 bp - 00000008
 DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -1587,12 +1591,12 @@ WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-WriteVal . . . . . . . . . . . .	P Near	 000005CB _TEXT	Length= 00000046 Public STDCALL
+WriteVal . . . . . . . . . . . .	P Near	 000005D2 _TEXT	Length= 00000046 Public STDCALL
   num  . . . . . . . . . . . . .	DWord	 bp - 00000004
   numStringOffset  . . . . . . .	DWord	 bp - 00000008
-  _convertLoop . . . . . . . . .	L Near	 000005DA _TEXT	
-  _writeComma  . . . . . . . . .	L Near	 000005FB _TEXT	
-  _noComma . . . . . . . . . . .	L Near	 00000607 _TEXT	
+  _convertLoop . . . . . . . . .	L Near	 000005E1 _TEXT	
+  _writeComma  . . . . . . . . .	L Near	 00000602 _TEXT	
+  _noComma . . . . . . . . . . .	L Near	 0000060E _TEXT	
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 getStringLen . . . . . . . . . .	P Near	 000002E8 _TEXT	Length= 00000035 Public STDCALL
   StringLen  . . . . . . . . . .	DWord	 bp - 00000004
@@ -1603,8 +1607,8 @@ main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000160 Public 
   _InputNumberLoop . . . . . . .	L Near	 0000001D _TEXT	
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
-setTextColorGreen  . . . . . . .	P Near	 0000061C _TEXT	Length= 0000000B Public STDCALL
-setTextColorWhite  . . . . . . .	P Near	 00000611 _TEXT	Length= 0000000B Public STDCALL
+setTextColorGreen  . . . . . . .	P Near	 00000623 _TEXT	Length= 0000000B Public STDCALL
+setTextColorWhite  . . . . . . .	P Near	 00000618 _TEXT	Length= 0000000B Public STDCALL
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 
 

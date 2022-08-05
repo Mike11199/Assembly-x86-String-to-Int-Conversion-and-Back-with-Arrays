@@ -707,14 +707,16 @@ CalculateSum ENDP
 	;PUSH    OFFSET IntegerArray_len
 
 CalculateAverage PROC
-	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledRemainder:SDWORD
+	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, doubledRemainder:SDWORD, divisor:DWORD, dividend: SDWORD
 	PUSHAD
 
 	mov num, 0
 	mov ECX, [EBP + 8]		; OFFSET IntegerArray_len
 	mov ECX, [ECX]
+	mov divisor, ECX
 	mov EAX, [EBP + 12]		; OFFSET sum_all_nums
 	mov EAX, [EAX]
+	mov dividend, EAX
 	CDQ
 	IDIV ECX
 
@@ -727,17 +729,17 @@ CalculateAverage PROC
 	mov doubledRemainder, EAX
 
 
-	cmp EAX, 0
+	cmp dividend, 0
 	jl	_testNegativeRounding
 	jmp _testPositiveRounding
 
 _testNegativeRounding:
-	cmp EAX, quotient
+	cmp EAX, dividend
 	jle _roundNegativeDown
 	jmp _saveValue
 
 _testPositiveRounding:
-	cmp EAX, quotient
+	cmp EAX, dividend
 	jge _roundPositiveUp
 	jmp _saveValue
 

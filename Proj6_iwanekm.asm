@@ -43,7 +43,9 @@ mGetString	MACRO	buffer, buffer_size, output_nums_entered, message
 	mDisplayString message				; Diplay prompt for num
 	MOV		EDX,  buffer				; Buffer is where output string by ref is saved to
 	MOV		ECX,  [buffer_size]
+	CALL	setTextColorGreen	
 	CALL	ReadString
+	CALL	setTextColorWhite
 	mov		ecx, output_nums_entered
 	mov		[ecx], EAX
 	POP		EAX
@@ -923,29 +925,33 @@ WriteVal ENDP
 
 ; =======================================================================================================================================================
 ; Name:	setTextColorWhite
-; Procedure to change console text to white.
+; Procedure to change console text to white.  Preserves all general-purpose registers.
 ; Preconditions: none
 ; Postconditions: none
 ; Receives: none
 ; Returns:  none
 ; =======================================================================================================================================================
 setTextColorWhite PROC
+	pushad
 	mov		eax, white 
 	call	SetTextColor
+	popad
 	ret
 setTextColorWhite ENDP
 
 ; =======================================================================================================================================================
 ; Name:	setTextColorGreen
-; Procedure to change console text to green.
+; Procedure to change console text to green. Preserves all general-purpose registers.
 ; Preconditions: none
 ; Postconditions: none
 ; Receives: none
 ; Returns:  none
 ; =======================================================================================================================================================
 setTextColorGreen PROC	
+	pushad
 	mov		eax, green 
 	call	SetTextColor
+	popad
 	ret
 setTextColorGreen ENDP
 

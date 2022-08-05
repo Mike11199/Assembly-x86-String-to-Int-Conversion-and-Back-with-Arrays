@@ -2,7 +2,7 @@ TITLE Project 6 - String Primitives and Macros      (Proj6_iwanekm.asm)
 
 ;--------------------------------------------------------------------------------------------------------------------------------------------------
 ; Author:					Michael Iwanek
-; Last Modified:			08/01/2022
+; Last Modified:			08/04/2022
 ; OSU email address:		iwanekm@oregonstate.edu
 ; Course number/section:	CS271 Section 400
 ; Project Number:			06
@@ -22,33 +22,49 @@ INCLUDE Irvine32.inc
 ; Name:				mGetString
 ;
 ; Description:		-This macro makes use of the ReadString Irvine library procedure to read a number entered by a user in the console as a string. 
-;					 
+;					 It then updates the string by reference passed to it on the stack.  It also updates the number of characters entered by the user into an
+;					 output variable passed to it by reference on the stack.
 ;
-; Preconditions:	none
+; Preconditions:	-none
 ;
-; Postconditions:	Register EDX is NOT changed since the USES keyword (ALLOWED TO USE PER INSTRUCTIONS) preserves the EDX register.  This is 
-;					similar to pushing EDX in the procedure and then popping it back into EDX before retuning to the calling funciton.
+; Postconditions:	-none
 ;
-; Receives:			Addresses of strings program_info_1, program_info_2, program_info_3, program_info_4, program_info_5, and divider that were
-;					declared in the data segment.  As addresses were received, this means the strings were passed by reference.
+; Receives:			-The temp string output variable by reference, max size of string, and output by reference for the number of characters the user enters. 
+;					 This output of characters this output of characters entered is used to test if the user entered nothing into the console or too large
+;					 of a number for a 32 bit signed register.
 ;
-; Returns:			nothing
+; Returns:			-Returns by reference a string, and the number of characters entered by the user by reference, so that global variable are updated.
 ;
 ; =======================================================================================================================================================
-mGetString	MACRO	buffer, buffer_size, output_nums_entered
-	PUSH  EDX				;Save EDX register
-	PUSH  ECX
-	PUSH  EAX
-	MOV   EDX,  buffer
-	MOV   ECX,  [buffer_size]
-	CALL  ReadString
-	mov	  ecx, output_nums_entered
-	mov	  [ecx], EAX
-	POP   EAX
-	POP   ECX				;Restore EDX
-	POP   EDX				;Restore ECX
+mGetString	MACRO	buffer, buffer_size, output_nums_entered, message
+	PUSH	EDX							; Save EDX register
+	PUSH	ECX
+	PUSH	EAX
+	mDisplayString message				; Diplay prompt for num
+	MOV		EDX,  buffer				; Buffer is where output string by ref is saved to
+	MOV		ECX,  [buffer_size]
+	CALL	ReadString
+	mov		ecx, output_nums_entered
+	mov		[ecx], EAX
+	POP		EAX
+	POP		ECX							; Restore EDX
+	POP		EDX							; Restore ECX
 ENDM
 
+; =======================================================================================================================================================
+; Name:				mDisplayString
+;
+; Description:		-This macro makes use of the WriteString Irvine library procedure to write a string to the conosle.  Used by the mGetString macro.
+;
+; Preconditions:	-none
+;
+; Postconditions:	-none
+;
+; Receives:			-Addresses of the string variable to be written needs to be passed as a parameter.
+;
+; Returns:			-nothing
+;
+; =======================================================================================================================================================
 mDisplayString	MACRO	buffer
 	PUSH  EDX				;Save EDX register
 	MOV   EDX, buffer
@@ -60,22 +76,28 @@ ENDM
 
 .data
 program_info_1		BYTE		"Hello!  Welcome to my program:  String Primitives and Macros by Michael Iwanek",13,10,13,10,0
+
 program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program will then display each number entered, their average value, and sum.",13,10,13,10
 					BYTE		"It will do this without using any Irvine procedures to read/write numbers, but will instead convert inputted strings to numbers using an algorithm.",13,10,13,10
 					BYTE		"After storing these numbers to an array, it will use another algorithm to convert these numbers back to strings to be displayed to the console.  ",13,10,13,10
 					BYTE		"Each number must be able to fit within a 32 bit register, or be between the values of -2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",13,10,13,10,0
-userString			BYTE		50 DUP(?)			;10 digit string, +1 for + or neg sign; +1 for null terminator
+
 userString_len		DWORD		?
 temp_num			SDWORD		?
 temp_num2			SDWORD		?
+rounded_avg			SDWORD		?
+sum_all_nums		SDWORD		?
+
+IntegerArray_len	DWORD		0				;num elements
+IntegerArray_len2	DWORD		1				;num elements
+userString			BYTE		50 DUP(?)		;10 digit string, +1 for + or neg sign; +1 for null terminator
 temp_string			BYTE		32 DUP(?)
 temp_string2		BYTE		32 DUP(?)
-userString_max_len	DWORD		LENGTHOF userString
-num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
 IntegerArray		SDWORD		10 DUP(?)
-IntegerArray_len	DWORD		0 ;num elements
-IntegerArray_len2	DWORD		1 ;num elements
 StringArray			SDWORD		10 DUP(?)
+userString_max_len	DWORD		LENGTHOF userString
+
+num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
 Error_no_input		BYTE		"Error!  You didn't enter in any numbers.",0 
 Error_char_num		BYTE		"Error!  You can only enter numbers, and the plus or minus sign.",0 
 Error_sign_use		BYTE		"Error!  You can only enter the plus or minus sign at the beginning of the number.",0 
@@ -83,10 +105,8 @@ Error_too_large		BYTE		"Error!  Your number must be between the ranges of-2,147,
 display_1			BYTE		"You entered the following numbers: ",0 
 display_2			BYTE		"The sum of all numbers entered is: ",0 
 display_3			BYTE		"The truncated average of all numbers entered is: ",0 
-rounded_avg			SDWORD		?
-sum_all_nums		SDWORD		?
-comma_string		BYTE		", ",0
 goodbye				BYTE		"Thanks for using my program!  Goodbye.",0
+comma_string		BYTE		", ",0
 
 .code
 main PROC
@@ -195,13 +215,29 @@ LOOP _InputNumberLoop
 main ENDP
 
 
+; =======================================================================================================================================================
+; Name:				ReadVal
+;
+; Description:		-This procedure invokes the mGetString macro to 
+;
+; Preconditions:	-none
+;
+; Postconditions:	-none
+;
+; Receives:			-The temp string output variable by reference, max size of string, and output by reference for the number of characters the user enters. 
+;					 This output of characters this output of characters entered is used to test if the user entered nothing into the console or too large
+;					 of a number for a 32 bit signed register.
+;
+; Returns:			-Returns by reference a string, and the number of characters entered by the user by reference, so that global variable are updated.
+;
+; =======================================================================================================================================================
 ReadVal PROC
 
 	;***************************************************************************************************************************
 	;	1) Invoke the mGetString macro to get user input in the form of a string of digits	
 	;***************************************************************************************************************************
 
-	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD
+	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD, messagePrompt:DWORD
 	PUSHAD
 
 	mov sign, 1
@@ -214,14 +250,17 @@ ReadVal PROC
 _PromptUserInput:
 
 	mov edx, [EBP + 52]	
-	mov NumsEntered, edx		;output variable to hold nums entered
+	mov NumsEntered, edx										;output variable to hold nums entered
 
-	mDisplayString [EBP + 8]									;prompt num	
-    mGetString StringRef, StringMaxLen, NumsEntered 			;pass string output by ref, size by value, and nums entered by ref to macro
+	;mDisplayString [EBP + 8]									;prompt num	
+	mov edx,[EBP + 8]
+	mov messagePrompt, edx
+
+    mGetString StringRef, StringMaxLen, NumsEntered, messagePrompt 		;pass string output by ref, size by value, and nums entered by ref to macro
 
 	mov edx, [EBP + 52]	
 	mov edx, [edx]
-	mov NumsEntered, edx		;output variable from macro to local variable
+	mov NumsEntered, edx										;output variable from macro to local variable
 
 
 
@@ -315,6 +354,8 @@ _noInputError:
 	jmp _PromptUserInput
 
 _TestifFirstDigitPlus:
+	cmp NumsEntered, 1
+	jz _noInputError
 	cmp StringMaxLen, ECX
 	jnz _signNotFirstError
 	mov sign, 1	
@@ -322,6 +363,8 @@ _TestifFirstDigitPlus:
 
 
 _TestifFirstDigitMinus:
+	cmp NumsEntered, 1
+	jz _noInputError
 	cmp StringMaxLen, ECX
 	jnz _signNotFirstError
 	mov sign, 2							    ; local variable set as negative

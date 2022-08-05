@@ -21,7 +21,8 @@ INCLUDE Irvine32.inc
 ; =======================================================================================================================================================
 ; Name:				mGetString
 ;
-; Description:		This macro gets 
+; Description:		-This macro makes use of the ReadString Irvine library procedure to read a number entered by a user in the console as a string. 
+;					 
 ;
 ; Preconditions:	none
 ;
@@ -73,7 +74,7 @@ userString_max_len	DWORD		LENGTHOF userString
 num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
 IntegerArray		SDWORD		10 DUP(?)
 IntegerArray_len	DWORD		0 ;num elements
-IntegerArray_size	DWORD		SIZEOF IntegerArray	   ;num bytes
+IntegerArray_len2	DWORD		1 ;num elements
 StringArray			SDWORD		10 DUP(?)
 Error_no_input		BYTE		"Error!  You didn't enter in any numbers.",0 
 Error_char_num		BYTE		"Error!  You can only enter numbers, and the plus or minus sign.",0 
@@ -90,14 +91,16 @@ goodbye				BYTE		"Thanks for using my program!  Goodbye.",0
 .code
 main PROC
 
+	;THIS PROGRAM DOES NOT USE GLOBAL VARIABLES BUT PASSES VARIABLE TO PROCEDURES ON THE STACK
+	;VARIABLE USED IN THE PROCEDURES ARE NOT GLOBAL; THEY ARE LOCAL VARIABLES USED FOR PROGRAM READABILITY
 
-	;display program prompts and info
+	;display program prompts and info to the user using the mDisplayString macro
 	mDisplayString OFFSET program_info_1
 	mDisplayString OFFSET program_info_2	
 	
 	mov ECX, 10
 
-	;loop to get 10 numbers from the user
+	;loop to get 10 numbers from the user as strings, converted to an array of numbers from ASCII manually
 _InputNumberLoop:
 
 	PUSH    OFFSET temp_num2
@@ -143,28 +146,41 @@ LOOP _InputNumberLoop
 	CALL	WriteVal
 	CALL	setTextColorWhite		
 
-	;display sum of numbers entered by user
+	;display text prompt before sum is displayed
 	CALL	CrLf
 	CALL	CrLf
 	mDisplayString OFFSET display_2	
 	CALL	setTextColorGreen	
 	CALL	CrLf
-	PUSH    OFFSET sum_all_nums
-	PUSH    OFFSET temp_string
+	
+	;display sum of numbers entered by user
+	PUSH    OFFSET comma_string
 	PUSH    OFFSET temp_string2
-	CALL	DisplaySum
+	PUSH    OFFSET temp_string
+	PUSH    OFFSET StringArray
+	PUSH    OFFSET IntegerArray_len2
+	PUSH    OFFSET sum_all_nums
+	CALL	WriteVal
 	CALL	setTextColorWhite	
 
-	;display truncated average of numbers entered by user
+	;display text prompt before truncated average is displayed
 	CALL	CrLf
 	CALL	CrLf
 	mDisplayString OFFSET display_3	
 	CALL	setTextColorGreen	
 	CALL	CrLf
-	PUSH    OFFSET rounded_avg
-	PUSH    OFFSET temp_string
+
+	;display truncated average of numbers entered by user
+	PUSH    OFFSET comma_string
 	PUSH    OFFSET temp_string2
-	CALL	DisplayAverage	
+	PUSH    OFFSET temp_string
+	PUSH    OFFSET StringArray
+	PUSH    OFFSET IntegerArray_len2
+	PUSH    OFFSET rounded_avg
+	CALL	WriteVal	
+	
+
+	;display the farewell message
 	CALL	setTextColorWhite	
 	CALL	CrLf
 	CALL	CrLf
@@ -234,10 +250,10 @@ _PromptUserInput:
 
 ;==================LOOP TO CONVERT STRING STARTS HERE=====================================================
 _convertString:	
-	LODSB					;takes ESI and copies to AL, then increment ESI to next element
+	LODSB						;takes ESI and copies to AL, then increment ESI to next element
 	cmp AL, 0
 	jz _FinishedConvertingtoNum
-	cmp AL, 48				;nums are from 48 to 57; + is 43 and - is 45
+	cmp AL, 48					;nums are from 48 to 57; + is 43 and - is 45
 	jl	_checkifSign	
 	cmp AL, 57
 	jg	_NotNumError
@@ -245,15 +261,15 @@ _convertString:
 
 
 _checkifSign:
-	cmp AL, 43			; + sign
+	cmp AL, 43					; + sign
 	jz	_TestifFirstDigitPlus
-	cmp AL, 45			; - sign
+	cmp AL, 45					; - sign
 	jz	_TestifFirstDigitMinus
 	jmp _NotNumError
 
 _Convert:
-	PUSH [EBP + 36]			 ;temp return variable from ConvertASCIItoNum
-	PUSH EAX				; this pushes AL and garbage values
+	PUSH [EBP + 36]			    ; temp return variable from ConvertASCIItoNum
+	PUSH EAX					; this pushes AL and garbage values
 	CALL ConvertASCIItoNum	
 	
 	mov EAX, numTemp			; tempNum to hold digits
@@ -286,14 +302,14 @@ _NextLoop:
 ;Errors and testing if + or - if first char
 _NotNumError:
 	
-	mDisplayString [EBP + 24]				;not num string
+	mDisplayString [EBP + 24]				; not num string
 	call CrLf
 	call CrLF
 	jmp _PromptUserInput
 
 
 _noInputError:
-	mDisplayString [EBP + 28]				;no input string
+	mDisplayString [EBP + 28]				; no input string
 	call CrLf
 	call CrLF
 	jmp _PromptUserInput
@@ -308,11 +324,11 @@ _TestifFirstDigitPlus:
 _TestifFirstDigitMinus:
 	cmp StringMaxLen, ECX
 	jnz _signNotFirstError
-	mov sign, 2							; local variable set as negative
+	mov sign, 2							    ; local variable set as negative
 	jmp _NextLoop
 
 _signNotFirstError:
-	mDisplayString [EBP + 20]				;prompt num	
+	mDisplayString [EBP + 20]				; prompt num	
 	call CrLf
 	call CrLF
 	jmp _PromptUserInput
@@ -362,16 +378,16 @@ _storeNumtoArray:
 	mov		EBX, 4
 	mul		EBX	
 	mov		ECX, returnValueAscii
-	mov		[ESI + EAX], ECX		; store num in int array + offset to put in the last postion of the array
+	mov		[ESI + EAX], ECX				; store num in int array + offset to put in the last postion of the array
 
 	mov		EDI, [EBP + 44]
 	inc		arrayelements
 	mov		eax, arrayelements
-	MOV	    [EDI], eax				;store count of array elements
+	MOV	    [EDI], eax						;store count of array elements
 
 
 	POPAD
-	RET 44					; dereference passed parameters
+	RET 44									; dereference passed parameters
 
 
 ReadVal ENDP
@@ -807,85 +823,18 @@ CalculateAverage ENDP
 
 
 
-	;PUSH    OFFSET rounded_avg
-	;PUSH    OFFSET temp_string
-	;PUSH    OFFSET temp_string2
-
-
-DisplayAverage PROC
-	LOCAL num:SDWORD, numString:DWORD
-	PUSHAD
-	
-	mov EAX, [EBP + 8]		; OFFSET temp_string 2
-	PUSH EAX
-
-	mov EAX, [EBP + 12]		; OFFSET temp_string 
-	PUSH EAX
-
-	mov EAX, [EBP + 16]		; OFFSET rounded_avg
-	mov EAX, [EAX]
-	mov num, EAX
-	PUSH num
-
-
-	; parameter order:  integer value, temp string 1, tempstring2
-	CALL ConvertNumtoASCII
-
-	mov EAX, [EBP + 8]
-	mov numString, EAX
-	mDisplayString numString
-
-	POPAD
-	ret 12
-
-DisplayAverage ENDP
-
-
-DisplaySum PROC
-	LOCAL num:SDWORD, numString:DWORD
-	PUSHAD
-	
-	mov EAX, [EBP + 8]		; OFFSET temp_string 2
-	PUSH EAX
-
-	mov EAX, [EBP + 12]		; OFFSET temp_string 
-	PUSH EAX
-
-	mov EAX, [EBP + 16]		; OFFSET rounded_avg
-	mov EAX, [EAX]
-	mov num, EAX
-	PUSH num
-
-
-	; parameter order:  integer value, temp string 1, tempstring2
-	CALL ConvertNumtoASCII
-	
-	mov EAX, [EBP + 8]
-	mov numString, EAX
-	mDisplayString numString
-
-	POPAD
-	ret 12
-
-DisplaySum ENDP
-
-
-	;PUSH    OFFSET temp_string2
-	;PUSH    OFFSET temp_string
-	;PUSH    OFFSET StringArray
-	;PUSH    OFFSET IntegerArray_len
-	;PUSH    OFFSET IntegerArray
-
-
 WriteVal PROC
 
-	LOCAL num:SDWORD
+	LOCAL num:SDWORD, arrayLengthNum:SDWORD, integerArrayReference:SDWORD
 	PUSHAD
 
 	mov ECX, [EBP + 12]		; OFFSET integer array length from stack for LOOP counter
 	mov ECX, [ECX]
+	mov arrayLengthNum, ECX
 	mov ESI, [EBP + 8]		; OFFSET integer array from stack
+	mov integerArrayReference, ESI
 	;mov EDI, [EBP + 16]	; OFFSET string array from stack
+
 
 _convertLoop:
 

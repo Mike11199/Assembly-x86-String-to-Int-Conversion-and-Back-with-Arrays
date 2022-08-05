@@ -37,20 +37,22 @@ INCLUDE Irvine32.inc
 ;
 ; =======================================================================================================================================================
 mGetString	MACRO	buffer, buffer_size, output_nums_entered, message
-	PUSH	EDX							; Save EDX register
-	PUSH	ECX
-	PUSH	EAX
-	mDisplayString message				; Diplay prompt for num
-	MOV		EDX,  buffer				; Buffer is where output string by ref is saved to
-	MOV		ECX,  [buffer_size]
-	CALL	setTextColorGreen	
-	CALL	ReadString
-	CALL	setTextColorWhite
-	mov		ecx, output_nums_entered
-	mov		[ecx], EAX
-	POP		EAX
-	POP		ECX							; Restore EDX
-	POP		EDX							; Restore ECX
+	
+	PUSH				EDX							; Save EDX register
+	PUSH				ECX
+	PUSH				EAX
+	mDisplayString		message						; Diplay prompt for num
+	MOV					EDX,  buffer				; Buffer is where output string by ref is saved to
+	MOV					ECX,  [buffer_size]
+	CALL				setTextColorGreen	
+	CALL				ReadString
+	CALL				setTextColorWhite
+	mov					ecx, output_nums_entered
+	mov					[ecx], EAX
+	POP					EAX
+	POP					ECX							  ; Restore EDX
+	POP					EDX							  ; Restore ECX
+
 ENDM
 
 ; =======================================================================================================================================================
@@ -68,10 +70,12 @@ ENDM
 ;
 ; =======================================================================================================================================================
 mDisplayString	MACRO	buffer
-	PUSH  EDX				;Save EDX register
-	MOV   EDX, buffer
-	CALL  WriteString
-	POP   EDX				;Restore EDX
+
+	PUSH				EDX							  ;Save EDX register
+	MOV					EDX, buffer
+	CALL				WriteString
+	POP					EDX							  ;Restore EDX
+
 ENDM
 
 ; (insert constant definitions here)
@@ -116,12 +120,15 @@ main PROC
 	;THIS PROGRAM DOES NOT USE GLOBAL VARIABLES BUT PASSES VARIABLE TO PROCEDURES ON THE STACK
 	;VARIABLE USED IN THE PROCEDURES ARE NOT GLOBAL; THEY ARE LOCAL VARIABLES USED FOR PROGRAM READABILITY
 
+
+
 	;display program prompts and info to the user using the mDisplayString macro
 	mDisplayString OFFSET program_info_1
 	mDisplayString OFFSET program_info_2	
 	
-	mov ECX, 10
 
+
+	mov ECX, 10
 	;loop to get 10 numbers from the user as strings, converted to an array of numbers from ASCII manually
 _InputNumberLoop:
 
@@ -235,61 +242,56 @@ main ENDP
 ; =======================================================================================================================================================
 ReadVal PROC
 
-	;***************************************************************************************************************************
-	;	1) Invoke the mGetString macro to get user input in the form of a string of digits	
-	;***************************************************************************************************************************
+;*****************************************************************************************************************************************************
+;	1) Invoke the mGetString macro to get user input in the form of a string of digits	
+;*****************************************************************************************************************************************************
 
 	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD, messagePrompt:DWORD
 	PUSHAD
 
-	mov sign, 1
-	mov eax, [EBP + 12]
-	mov StringRef, eax
-	mov eax, [EBP + 16]	
-	mov StringMaxLen, eax		
+	mov				sign, 1
+	mov				eax, [EBP + 12]
+	mov				StringRef, eax
+	mov				eax, [EBP + 16]	
+	mov				StringMaxLen, eax		
 
 
 _PromptUserInput:
 
-	mov edx, [EBP + 52]	
-	mov NumsEntered, edx										;output variable to hold nums entered
+	mov				edx, [EBP + 52]	
+	mov				NumsEntered, edx										   ;output variable to hold nums entered
+						
+	mov				edx,[EBP + 8]
+	mov				messagePrompt, edx										   ;prompt num	
 
-	;mDisplayString [EBP + 8]									;prompt num	
-	mov edx,[EBP + 8]
-	mov messagePrompt, edx
+    mGetString	    StringRef, StringMaxLen, NumsEntered, messagePrompt 	   ;pass string output by ref, size by value, and nums entered by ref to macro
 
-    mGetString StringRef, StringMaxLen, NumsEntered, messagePrompt 		;pass string output by ref, size by value, and nums entered by ref to macro
-
-	mov edx, [EBP + 52]	
-	mov edx, [edx]
-	mov NumsEntered, edx										;output variable from macro to local variable
-
+	mov			    edx, [EBP + 52]	
+	mov				edx, [edx]
+	mov				NumsEntered, edx										   ;output variable from macro to local variable
 
 
 
 
-	
-	;***************************************************************************************************************************
-	;	2) Convert (USING STRING PRIMITIVES) the string of ASCII digits to its numeric value representation (SDWORD).
-	;   validating each char is a valid # (not symbol)                                                                
-	;***************************************************************************************************************************
 
 	
-	;mov EDX, StringRef				;LOCAL VARIABLE - test delete
-	;CALL WriteString				;test delete
-	
-
-	mov ECX, NumsEntered			;test if no nums entered using local variable
-	cmp ECX, 0
-	jz _noInputError
-	cmp ECX, 11
-	jg _numTooLargeError
-	mov ESI, StringRef				;if nums were entered, then start loop
-	mov ECX, StringMaxLen			;test if no nums entered using local variable
-	mov numTemp, 0
+;*****************************************************************************************************************************************************
+;	2) Convert (USING STRING PRIMITIVES) the string of ASCII digits to its numeric value representation (SDWORD).
+;   validating each char is a valid # (not symbol)                                                                
+;*****************************************************************************************************************************************************
 
 
-;==================LOOP TO CONVERT STRING STARTS HERE=====================================================
+	mov				ECX, NumsEntered										   ;test if no nums entered using local variable
+	cmp				ECX, 0
+	jz				_noInputError
+	cmp				ECX, 11
+	jg				_numTooLargeError
+	mov				ESI, StringRef											   ;if nums were entered, then start loop
+	mov				ECX, StringMaxLen										   ;test if no nums entered using local variable
+	mov				numTemp, 0
+
+
+;==================LOOP TO CONVERT STRING STARTS HERE======================================================================================
 _convertString:	
 	LODSB						;takes ESI and copies to AL, then increment ESI to next element
 	cmp AL, 0
@@ -336,7 +338,7 @@ _NextLoop:
 	
 	loop _ConvertString
 	jmp _FinishedConvertingtoNum
-;==================LOOP TO CONVERT STRING ENDS HERE=====================================================
+;==================LOOP TO CONVERT STRING ENDS HERE========================================================================================
 
 
 
@@ -381,9 +383,9 @@ _signNotFirstError:
 
 
 
-	;***************************************************************************************************************************
-	;	3) Store this one value in a memory variable (output paratmeter, by reference).                                                              
-	;***************************************************************************************************************************
+;*****************************************************************************************************************************************************
+;	3) Store this one value in a memory variable (output paratmeter, by reference).                                                              
+;*****************************************************************************************************************************************************
 
 _FinishedConvertingtoNum:
 	
@@ -438,42 +440,21 @@ _storeNumtoArray:
 ReadVal ENDP
 
 
-getStringLen PROC
-	
-	LOCAL StringLen:DWORD
-	PUSHAD
 
-	mov ECX, 30				;max length for counter
-	mov ESI, [EBP + 12]		;output ref
-
-	mov StringLen, 0
-	
-_countLoop:
-	LODSB	
-	cmp AL, 0
-	jle _end
-	cmp AL, 43			; + sign
-	jz _nocount
-	cmp AL, 45			; - sign
-	jz _nocount
-	inc StringLen
-
-_nocount:
-	loop _countLoop
-	
-_end:
-	
-	mov EAX, StringLen		;LOCAL VARIABLE
-	mov EDX, [EBP + 16] 	;move count to output variable
-	mov [EDX], EAX 			;move count to output variable
-	
-	POPAD
-	ret 12
-
-getStringLen ENDP
-
-
-
+; =======================================================================================================================================================
+; Name:				ConvertASCIItoNum
+;
+; Description:		-This procedure invokes the mGetString macro to 
+;
+; Preconditions:	-none
+;
+; Postconditions:	-none
+;
+; Receives:			-The t
+;
+; Returns:			-Returns
+;
+; =======================================================================================================================================================
 ConvertASCIItoNum PROC
 	
 	LOCAL numText:BYTE 
@@ -482,7 +463,7 @@ ConvertASCIItoNum PROC
 	mov EAX, [EBP + 8]		;whole EAX register
 	mov EBX, [EBP + 12]		;output variable
 
-	mov numText, AL		;technically comparing AL here
+	mov numText, AL			;technically comparing AL here
 
 
 	cmp numText, 48
@@ -558,6 +539,20 @@ _return:
 ConvertASCIItoNum ENDP
 
 
+; =======================================================================================================================================================
+; Name:				ConvertNumtoASCII
+;
+; Description:		-This procedure invokes the mGetString macro to 
+;
+; Preconditions:	-none
+;
+; Postconditions:	-none
+;
+; Receives:			-The 
+;
+; Returns:			-Returns
+;
+; =======================================================================================================================================================
 ConvertNumtoASCII PROC
 	
 	 ; parameter order:  integer value, temp string 1, tempstring2
@@ -765,10 +760,20 @@ ConvertNumtoASCII ENDP
 
 
 
-	;PUSH    OFFSET sum_all_nums
-	;PUSH    OFFSET IntegerArray_len
-	;PUSH    OFFSET IntegerArray
-
+; =======================================================================================================================================================
+; Name:				CalculateSum
+;
+; Description:		-This procedure 
+;
+; Preconditions:	-none
+;
+; Postconditions:	-none
+;
+; Receives:			-The 
+;
+; Returns:			-Returns 
+;
+; =======================================================================================================================================================
 CalculateSum PROC
 	LOCAL num:SDWORD 
 	PUSHAD
@@ -800,10 +805,20 @@ _SumLoop:
 CalculateSum ENDP
 
 
-	;PUSH    OFFSET rounded_avg
-	;PUSH    OFFSET sum_all_nums
-	;PUSH    OFFSET IntegerArray_len
-
+; =======================================================================================================================================================
+; Name:				CalculateAverage
+;
+; Description:		-This procedure
+;
+; Preconditions:	-none
+;
+; Postconditions:	-none
+;
+; Receives:			-The
+;
+; Returns:			-Returns 
+;
+; =======================================================================================================================================================
 CalculateAverage PROC
 	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, divisor:DWORD, dividend: SDWORD ;,doubledRemainder:SDWORD, 
 	PUSHAD
@@ -857,9 +872,6 @@ _saveValue:
 	mov [EAX], ebx	
 
 
-
-
-
 	POPAD
 	ret 12
 
@@ -867,7 +879,21 @@ CalculateAverage ENDP
 
 
 
-
+; =======================================================================================================================================================
+; Name:				WriteVal
+;
+; Description:		-This procedure converts a numeric SDWORD value, input parameter by reference, to a string of ASCII digits manually.  It also 
+;					 invokes the mGetString macro to print the converted value to the console for the user.  It prints out commas if there are multiple values.
+;
+; Preconditions:	-none
+;
+; Postconditions:	-none
+;
+; Receives:			-
+;
+; Returns:			-Returns 
+;
+; =======================================================================================================================================================
 WriteVal PROC
 
 	LOCAL num:SDWORD, arrayLengthNum:SDWORD, integerArrayReference:SDWORD
@@ -878,7 +904,6 @@ WriteVal PROC
 	mov arrayLengthNum, ECX
 	mov ESI, [EBP + 8]		; OFFSET integer array from stack
 	mov integerArrayReference, ESI
-	;mov EDI, [EBP + 16]	; OFFSET string array from stack
 
 
 _convertLoop:
@@ -920,6 +945,59 @@ _noComma:
 
 
 WriteVal ENDP
+
+
+; =======================================================================================================================================================
+;			*****THIS PROCEDURE IS NOT USED.  THIS WAS BEFORE I REALIZED THAT THE READSTRING IRVINE PROC CAN COUNT THE CHARACTERS ENTERED*******
+;
+; Name:				getStringLen
+;
+; Description:		-This procedure converts a numeric SDWORD value, input parameter by reference, to a string of ASCII digits manually.  It also 
+;					 invokes the mGetString macro to print the converted value to the console for the user.  It prints out commas if there are multiple values.
+;
+; Preconditions:	-none
+;
+; Postconditions:	-none
+;
+; Receives:			-
+;
+; Returns:			-Returns 
+;
+; =======================================================================================================================================================
+getStringLen PROC
+	
+	LOCAL StringLen:DWORD
+	PUSHAD
+
+	mov ECX, 30				;max length for counter
+	mov ESI, [EBP + 12]		;output ref
+
+	mov StringLen, 0
+	
+_countLoop:
+	LODSB	
+	cmp AL, 0
+	jle _end
+	cmp AL, 43			; + sign
+	jz _nocount
+	cmp AL, 45			; - sign
+	jz _nocount
+	inc StringLen
+
+_nocount:
+	loop _countLoop
+	
+_end:
+	
+	mov EAX, StringLen		;LOCAL VARIABLE
+	mov EDX, [EBP + 16] 	;move count to output variable
+	mov [EDX], EAX 			;move count to output variable
+	
+	POPAD
+	ret 12
+
+getStringLen ENDP
+
 
 
 ; =======================================================================================================================================================

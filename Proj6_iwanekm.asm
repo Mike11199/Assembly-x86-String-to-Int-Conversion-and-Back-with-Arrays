@@ -34,14 +34,18 @@ INCLUDE Irvine32.inc
 ; Returns:			nothing
 ;
 ; =======================================================================================================================================================
-mGetString	MACRO	buffer, buffer_size
+mGetString	MACRO	buffer, buffer_size, output_nums_entered
 	PUSH  EDX				;Save EDX register
 	PUSH  ECX
+	PUSH  EAX
 	MOV   EDX,  buffer
 	MOV   ECX,  [buffer_size]
 	CALL  ReadString
-	POP   EDX				;Restore EDX
-	POP   ECX				;Restore ECX
+	mov	  ecx, output_nums_entered
+	mov	  [ecx], EAX
+	POP   EAX
+	POP   ECX				;Restore EDX
+	POP   EDX				;Restore ECX
 ENDM
 
 mDisplayString	MACRO	buffer
@@ -62,6 +66,7 @@ program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program
 userString			BYTE		50 DUP(?)			;10 digit string, +1 for + or neg sign; +1 for null terminator
 userString_len		DWORD		?
 temp_num			SDWORD		?
+temp_num2			SDWORD		?
 temp_string			BYTE		32 DUP(?)
 temp_string2		BYTE		32 DUP(?)
 userString_max_len	DWORD		LENGTHOF userString
@@ -76,7 +81,7 @@ Error_sign_use		BYTE		"Error!  You can only enter the plus or minus sign at the 
 Error_too_large		BYTE		"Error!  Your number must be between the ranges of-2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",0 
 display_1			BYTE		"You entered the following numbers: ",0 
 display_2			BYTE		"The sum of all numbers entered is: ",0 
-display_3			BYTE		"The rounded average of all numbers entered is: ",0 
+display_3			BYTE		"The truncated average of all numbers entered is: ",0 
 rounded_avg			SDWORD		?
 sum_all_nums		SDWORD		?
 comma_string		BYTE		", ",0
@@ -94,6 +99,7 @@ main PROC
 
 _InputNumberLoop:
 
+	PUSH    OFFSET temp_num2
 	PUSH	OFFSET Error_too_large
 	PUSH    OFFSET IntegerArray_len
 	PUSH    OFFSET IntegerArray
@@ -173,29 +179,28 @@ ReadVal PROC
 	;	1) Invoke the mGetString macro to get user input in the form of a string of digits	
 	;***************************************************************************************************************************
 
-	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD
+	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD, OutputString:DWORD
 	PUSHAD
 
 	mov sign, 1
 	mov eax, [EBP + 12]
 	mov StringRef, eax
 	mov eax, [EBP + 16]	
-	mov StringMaxLen, eax
+	mov StringMaxLen, eax		
+
 
 _PromptUserInput:
 
-	mDisplayString [EBP + 8]				    ;prompt num	
-    mGetString StringRef, StringMaxLen			;pass (ref, size) to macro to get user string
+	mov edx, [EBP + 52]	
+	mov NumsEntered, edx		;output variable to hold nums entered
 
-	;======GET HOW MANY NUMBERS THE USER ENTERED=====================
-	push [EBP + 32]				;push empty output variable by ref
-	push StringRef				;local variable
-	push StringMaxLen			;local variable
-	CALL getStringLen			;get string len
-	
-	mov eax, [EBP + 32]	
-	mov edx, [eax]
-	mov NumsEntered, edx		;local variable to hold nums entered
+	mDisplayString [EBP + 8]									;prompt num	
+    mGetString StringRef, StringMaxLen, NumsEntered 			;pass string output by ref, size by value, and nums entered by ref to macro
+
+	mov edx, [EBP + 52]	
+	mov edx, [edx]
+	mov NumsEntered, edx		;output variable from macro to local variable
+
 
 
 
@@ -214,8 +219,8 @@ _PromptUserInput:
 	mov ECX, NumsEntered			;test if no nums entered using local variable
 	cmp ECX, 0
 	jz _noInputError
-	cmp ECX, 10
-	jg _numTooLargError
+	cmp ECX, 11
+	jg _numTooLargeError
 	mov ESI, StringRef				;if nums were entered, then start loop
 	mov ECX, StringMaxLen			;test if no nums entered using local variable
 	mov numTemp, 0
@@ -248,7 +253,7 @@ _Convert:
 	mov EAX, numTemp			; tempNum to hold digits
 
 	cmp EAX, 214748364
-	jg  _numTooLargError
+	jg  _numTooLargeError
 
 
 	mov ebx, 10
@@ -329,12 +334,12 @@ _convertNumtoNegative:
 _testIfNumtooLarge:
 	mov EAX, returnValueAscii	
 	cmp EAX, 2147483647
-	jg	_numTooLargError
+	jg	_numTooLargeError
 	cmp EAX, -2147483647
-	jl	_numTooLargError
+	jl	_numTooLargeError
 	jmp _storeNumtoArray
 
-_numTooLargError:
+_numTooLargeError:
 	mDisplayString [EBP + 48]	
 	call CrLf
 	call CrLF
@@ -528,8 +533,12 @@ _ClearString_two:
 	;test if number is negative, if so we need to reverse it and add a negative sign in front
 	cmp EAX, 0
 	jl	_numIsNegativeInvert
+	cmp EAX, 0
+	jz _NumisJustZero
 	jmp _MainConversionLoop
 
+
+	;test if number is just zero
 
 _numIsNegativeInvert:
 	neg eax
@@ -629,7 +638,12 @@ _nine_num:
 	mov AL, 57 
 	jmp add_num_to_string
 
-
+_NumisJustZero:
+	mov AL, 48
+	mov [EDI], AL	;move result to output variable
+	add EDI, 1		;increment
+	inc newStringLen
+	jmp _AddTERMINATOR
 
 add_num_to_string:
 	mov [EDI], AL	;move result to output variable
@@ -739,33 +753,35 @@ CalculateAverage PROC
 
 	mov quotient, EAX
 	mov remainder, EDX
-	
-	mov EAX, remainder
-	mov EBX, 2
-	mul EBX
-	mov doubledRemainder, EAX
-
-
-	cmp dividend, 0
-	jl	_testNegativeRounding
-	jmp _testPositiveRounding
-
-_testNegativeRounding:
-	cmp EAX, dividend
-	jle _roundNegativeDown
-	jmp _saveValue
-
-_testPositiveRounding:
-	cmp EAX, dividend
-	jge _roundPositiveUp
-	jmp _saveValue
-
-_roundPositiveUp:	
-	inc quotient
-	jmp _saveValue
-
-_roundNegativeDown:
-	dec quotient
+;
+; ***********COMMENTED OUT AS PROJECT INSTRUCTIONS CHANGED FROM ROUNDING TO TRUNCATION - REFERENCE ED DISCUSSION 1661642****************
+;
+;	mov EAX, remainder
+;	mov EBX, 2
+;	mul EBX
+;	mov doubledRemainder, EAX
+;
+;
+;	cmp dividend, 0
+;	jl	_testNegativeRounding
+;	jmp _testPositiveRounding
+;
+;_testNegativeRounding:
+;	cmp EAX, dividend
+;	jle _roundNegativeDown
+;	jmp _saveValue
+;
+;_testPositiveRounding:
+;	cmp EAX, dividend
+;	jge _roundPositiveUp
+;	jmp _saveValue
+;
+;_roundPositiveUp:	
+;	inc quotient
+;	jmp _saveValue
+;
+;_roundNegativeDown:
+;	dec quotient
 
 _saveValue:
 

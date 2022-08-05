@@ -922,7 +922,6 @@ _noComma:
 WriteVal ENDP
 
 
-
 ; =======================================================================================================================================================
 ; Name:	setTextColorWhite
 ; Procedure to change console text to white.  Preserves all general-purpose registers.

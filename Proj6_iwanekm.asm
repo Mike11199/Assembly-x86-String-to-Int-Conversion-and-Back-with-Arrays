@@ -90,13 +90,14 @@ goodbye				BYTE		"Thanks for using my program!  Goodbye.",0
 .code
 main PROC
 
-; (insert executable instructions here)
-	
+
+	;display program prompts and info
 	mDisplayString OFFSET program_info_1
 	mDisplayString OFFSET program_info_2	
 	
 	mov ECX, 10
 
+	;loop to get 10 numbers from the user
 _InputNumberLoop:
 
 	PUSH    OFFSET temp_num2
@@ -116,16 +117,19 @@ _InputNumberLoop:
 LOOP _InputNumberLoop
 
 	
+	;calc sum
 	PUSH    OFFSET sum_all_nums
 	PUSH    OFFSET IntegerArray_len
 	PUSH    OFFSET IntegerArray
 	CALL	CalculateSum	
 
+	;calc average
 	PUSH    OFFSET rounded_avg
 	PUSH    OFFSET sum_all_nums
 	PUSH    OFFSET IntegerArray_len
 	CALL	CalculateAverage	
 
+	;display numbers entered by user
 	CALL	CrLf
 	mDisplayString OFFSET display_1
 	CALL	CrLf
@@ -139,6 +143,7 @@ LOOP _InputNumberLoop
 	CALL	WriteVal
 	CALL	setTextColorWhite		
 
+	;display sum of numbers entered by user
 	CALL	CrLf
 	CALL	CrLf
 	mDisplayString OFFSET display_2	
@@ -150,6 +155,7 @@ LOOP _InputNumberLoop
 	CALL	DisplaySum
 	CALL	setTextColorWhite	
 
+	;display truncated average of numbers entered by user
 	CALL	CrLf
 	CALL	CrLf
 	mDisplayString OFFSET display_3	

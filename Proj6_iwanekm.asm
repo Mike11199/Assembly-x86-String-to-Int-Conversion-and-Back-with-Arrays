@@ -10,8 +10,22 @@ TITLE Project 6 - String Primitives and Macros      (Proj6_iwanekm.asm)
 ;--------------------------------------------------------------------------------------------------------------------------------------------------
 ; Description: 
 ;--------------------------------------------------------------------------------------------------------------------------------------------------
-;			-This program allows user to enter in a series of numbers as strings.  It then conver
-
+;			
+;			-This program allows numbers to be read/written by the users without Irvine library procedures, using manual conversion of numbers to strings
+;			 and vice versa.
+;
+;			-This program allows user to enter in a series of numbers as strings.  It then converts the string into a number using the ReadVal procedure.
+;			 it accomplishes this without Irvine library procedures, by REPEATEDLY MULTIPLYING each char of the string converted to a number by 10 if necessary,
+;			 building up a number digit by digit.
+;
+;			-After creating the number, it saves it to an array of numbers.  It then calculates the average and sum of these numbers and displays these to the user.
+;
+;			-Finally, it uses the WriteVal function (also used for the sum/average previously) to loop through each SDWORD integer array and convert that number
+;			 back into a string manually wihtout Irvine library procedures.  It does this by REPEATEDLY DIVIDING each number by 10 to build back a string from the
+;			 remainder of each division. From this, it uses string primitve instructions to reverse the string, so that it is in the correct order.
+;
+;			-It also makes use of two macros to get and display strings to the user.
+;
 ;--------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -227,7 +241,11 @@ main ENDP
 ; =======================================================================================================================================================
 ; Name:				ReadVal
 ;
-; Description:		-This procedure invokes the mGetString macro to 
+; Description:		-This procedure invokes the mGetString macro to prompt the user to numbers as strings into the console.  It then has an inner loop that 
+;					 repeatedly calls the ConvertASCIItoNum procedure based on how many characters the user entered.  After receiving on the stack the number
+;					 converted from the string representation the user entered from the ConvertASCIItoNum procedure ,it repeately multiplies the number received
+;					 by 10, to slowly build the actual numerical representation of the string given.  After this, it saves the numerical value into a SDWORD 
+;					 array of integers.  
 ;
 ; Preconditions:	-none
 ;
@@ -321,7 +339,7 @@ _Convert:
 	jg					_numTooLargeError
 
 
-	MOV					ebx, 10
+	MOV					ebx, 10							; Multiply the number repeatedly by 10 to build up the number digit by digit from the string
 	mul					ebx								; multiply by 10 then loop
 	push				eax								; save multiplied numTemp
 
@@ -444,13 +462,16 @@ ReadVal ENDP
 ; =======================================================================================================================================================
 ; Name:				ConvertASCIItoNum
 ;
-; Description:		-This procedure invokes the mGetString macro to 
+; Description:		-This procedure invokes converts an ASCII character of a number to an actual number.  It then returns it as an output variable.
+;					 It is only called by the ReadVal function.  It is separated from the ReadVal function to modularize the program.  Its parameters
+;					 are passed to it on the stack by the ReadVal function to avoid using globals.
 ;
 ; Preconditions:	-none
 ;
 ; Postconditions:	-none
 ;
-; Receives:			-The t
+; Receives:			-The the input string of a num passed to it on the stack.  Also receives the output variable where the actual num will be returned
+;					 to the ReadVal function.
 ;
 ; Returns:			-Returns
 ;
@@ -460,10 +481,10 @@ ConvertASCIItoNum PROC
 	LOCAL numText:BYTE 
 	PUSHAD
 
-	MOV EAX,			[EBP + 8]			; whole EAX register
-	MOV EBX,			[EBP + 12]			; output variable
+	MOV EAX,			[EBP + 8]			; input variable - string number passed into the entire EAX register
+	MOV EBX,			[EBP + 12]			; output variable by reference
 
-	MOV					numText, AL			; technically comparing AL here
+	MOV					numText, AL			; moves the lower portion (AL) of the EAX register to be used to decide what digit to convert the ASCII to
 
 
 	CMP					numText, 48
@@ -531,10 +552,10 @@ _nine:
 
 
 _return:
-	MOV					[EBX],EAX	;move result to output variable
+	MOV					[EBX],EAX	; move result to output variable that was stored in EBX above.  Now ASCII num character is an actual num
 	
 	POPAD
-	ret 8
+	ret 8							; dereference variables so that num can be passed back to the ReadVal function
 
 ConvertASCIItoNum ENDP
 
@@ -542,13 +563,17 @@ ConvertASCIItoNum ENDP
 ; =======================================================================================================================================================
 ; Name:				ConvertNumtoASCII
 ;
-; Description:		-This procedure invokes the mGetString macro to 
+; Description:		-This is passed an integer by reference.  It repeatedly divides this integer by 10 to obtain its digits.  It adds each remainder after
+;					 the division by 10 to a string, then adds a null terminator.  It then reverses the string using string primitives so that it is in the
+;					 original order the number was entered in by the user (as a string).
 ;
 ; Preconditions:	-none
 ;
 ; Postconditions:	-none
 ;
-; Receives:			-The 
+; Receives:			-Offsets of the two output strings needed by reference.  One to hold the string being created after multiple divisions by 10, the other
+;					 to hold the reversed string.  Also receives the integer by reference to be divided.  Does not receive length, stops when both the quotient
+;					 and the remainder are both zero.  Due to this, has a special case to handle being given a number that is exactly zero.
 ;
 ; Returns:			-Returns
 ;
@@ -758,13 +783,13 @@ ConvertNumtoASCII ENDP
 ; =======================================================================================================================================================
 ; Name:				CalculateSum
 ;
-; Description:		-This procedure 
+; Description:		-This procedure calculates the sum of all integers entered by the user in the integer array passed into it by reference.
 ;
 ; Preconditions:	-none
 ;
 ; Postconditions:	-none
 ;
-; Receives:			-The 
+; Receives:			-Integer array length, integer array of nums entered by the user by reference, and output variable for the sum by reference.
 ;
 ; Returns:			-Returns 
 ;
@@ -803,13 +828,13 @@ CalculateSum ENDP
 ; =======================================================================================================================================================
 ; Name:				CalculateAverage
 ;
-; Description:		-This procedure
+; Description:		-This procedure calculates the average of all integers entered by the user.
 ;
 ; Preconditions:	-none
 ;
 ; Postconditions:	-none
 ;
-; Receives:			-The
+; Receives:			-Integer array length, sum of all numbers input variable by reference, and output variable for the average by reference.
 ;
 ; Returns:			-Returns 
 ;
@@ -878,6 +903,9 @@ CalculateAverage ENDP
 ;
 ; Description:		-This procedure converts a numeric SDWORD value, input parameter by reference, to a string of ASCII digits manually.  It also 
 ;					 invokes the mGetString macro to print the converted value to the console for the user.  It prints out commas if there are multiple values.
+;
+;					-It calls a procedure called "ConvertNumtoASCII", and passes parameters on the stack to it to modularize the program.  This procedure
+;					 repeatedly divides the number by 10 and adds the reaminder as a string to a string array, then reverses the string.
 ;
 ; Preconditions:	-none
 ;

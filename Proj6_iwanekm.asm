@@ -47,8 +47,8 @@ mGetString	MACRO	buffer, buffer_size, output_nums_entered, message
 	CALL				setTextColorGreen	
 	CALL				ReadString
 	CALL				setTextColorWhite
-	mov					ecx, output_nums_entered
-	mov					[ecx], EAX
+	MOV					ecx, output_nums_entered
+	MOV					[ecx], EAX
 	POP					EAX
 	POP					ECX							  ; Restore EDX
 	POP					EDX							  ; Restore ECX
@@ -123,99 +123,99 @@ main PROC
 
 
 	;display program prompts and info to the user using the mDisplayString macro
-	mDisplayString OFFSET program_info_1
-	mDisplayString OFFSET program_info_2	
+	mDisplayString		OFFSET program_info_1
+	mDisplayString		OFFSET program_info_2	
 	
 
 
-	mov ECX, 10
+	MOV ECX, 10
 	;loop to get 10 numbers from the user as strings, converted to an array of numbers from ASCII manually
 _InputNumberLoop:
 
-	PUSH    OFFSET temp_num2
-	PUSH	OFFSET Error_too_large
-	PUSH    OFFSET IntegerArray_len
-	PUSH    OFFSET IntegerArray
-	PUSH    OFFSET temp_num
-	PUSH    OFFSET userString_len
-	PUSH	OFFSET Error_no_input
-	PUSH	OFFSET Error_char_num
-	PUSH	OFFSET Error_sign_use
-	PUSH    userString_max_len
-	PUSH	OFFSET userString
-	PUSH	OFFSET num_prompt
-	CALL	ReadVal
+	PUSH				OFFSET temp_num2
+	PUSH				OFFSET Error_too_large
+	PUSH				OFFSET IntegerArray_len
+	PUSH				OFFSET IntegerArray
+	PUSH				OFFSET temp_num
+	PUSH				OFFSET userString_len
+	PUSH				OFFSET Error_no_input
+	PUSH				OFFSET Error_char_num
+	PUSH				OFFSET Error_sign_use
+	PUSH				userString_max_len
+	PUSH				OFFSET userString
+	PUSH				OFFSET num_prompt
+	CALL				ReadVal
 
 LOOP _InputNumberLoop
 
 	
 	;calc sum
-	PUSH    OFFSET sum_all_nums
-	PUSH    OFFSET IntegerArray_len
-	PUSH    OFFSET IntegerArray
-	CALL	CalculateSum	
+	PUSH				OFFSET sum_all_nums
+	PUSH				OFFSET IntegerArray_len
+	PUSH				OFFSET IntegerArray
+	CALL				CalculateSum	
 
 	;calc average
-	PUSH    OFFSET rounded_avg
-	PUSH    OFFSET sum_all_nums
-	PUSH    OFFSET IntegerArray_len
-	CALL	CalculateAverage	
+	PUSH				OFFSET rounded_avg
+	PUSH				OFFSET sum_all_nums
+	PUSH				OFFSET IntegerArray_len
+	CALL				CalculateAverage	
 
 	;display numbers entered by user
-	CALL	CrLf
-	mDisplayString OFFSET display_1
-	CALL	CrLf
-	CALL	setTextColorGreen	
-	PUSH    OFFSET comma_string
-	PUSH    OFFSET temp_string2
-	PUSH    OFFSET temp_string
-	PUSH    OFFSET StringArray
-	PUSH    OFFSET IntegerArray_len
-	PUSH    OFFSET IntegerArray
-	CALL	WriteVal
-	CALL	setTextColorWhite		
+	CALL				CrLf
+	mDisplayString		OFFSET display_1
+	CALL				CrLf
+	CALL				setTextColorGreen	
+	PUSH				OFFSET comma_string
+	PUSH				OFFSET temp_string2
+	PUSH				OFFSET temp_string
+	PUSH				OFFSET StringArray
+	PUSH				OFFSET IntegerArray_len
+	PUSH				OFFSET IntegerArray
+	CALL				WriteVal
+	CALL				setTextColorWhite		
 
 	;display text prompt before sum is displayed
-	CALL	CrLf
-	CALL	CrLf
-	mDisplayString OFFSET display_2	
-	CALL	setTextColorGreen	
-	CALL	CrLf
+	CALL				CrLf
+	CALL				CrLf
+	mDisplayString		OFFSET display_2	
+	CALL				setTextColorGreen	
+	CALL				CrLf
 	
 	;display sum of numbers entered by user
-	PUSH    OFFSET comma_string
-	PUSH    OFFSET temp_string2
-	PUSH    OFFSET temp_string
-	PUSH    OFFSET StringArray
-	PUSH    OFFSET IntegerArray_len2
-	PUSH    OFFSET sum_all_nums
-	CALL	WriteVal
-	CALL	setTextColorWhite	
+	PUSH				OFFSET comma_string
+	PUSH				OFFSET temp_string2
+	PUSH				OFFSET temp_string
+	PUSH				OFFSET StringArray
+	PUSH				OFFSET IntegerArray_len2
+	PUSH				OFFSET sum_all_nums
+	CALL				WriteVal
+	CALL				setTextColorWhite	
 
 	;display text prompt before truncated average is displayed
-	CALL	CrLf
-	CALL	CrLf
-	mDisplayString OFFSET display_3	
-	CALL	setTextColorGreen	
-	CALL	CrLf
+	CALL				CrLf
+	CALL				CrLf
+	mDisplayString		OFFSET display_3	
+	CALL				setTextColorGreen	
+	CALL				CrLf
 
 	;display truncated average of numbers entered by user
-	PUSH    OFFSET comma_string
-	PUSH    OFFSET temp_string2
-	PUSH    OFFSET temp_string
-	PUSH    OFFSET StringArray
-	PUSH    OFFSET IntegerArray_len2
-	PUSH    OFFSET rounded_avg
-	CALL	WriteVal	
+	PUSH				OFFSET comma_string
+	PUSH				OFFSET temp_string2
+	PUSH				OFFSET temp_string
+	PUSH				OFFSET StringArray
+	PUSH				OFFSET IntegerArray_len2
+	PUSH				OFFSET rounded_avg
+	CALL				WriteVal	
 	
 
 	;display the farewell message
-	CALL	setTextColorWhite	
-	CALL	CrLf
-	CALL	CrLf
-	mDisplayString OFFSET goodbye	
-	CALL	CrLf
-	CALL	CrLf
+	CALL				setTextColorWhite	
+	CALL				CrLf
+	CALL				CrLf
+	mDisplayString		OFFSET goodbye	
+	CALL				CrLf
+	CALL				CrLf
 
 
 
@@ -249,26 +249,26 @@ ReadVal PROC
 	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD, messagePrompt:DWORD
 	PUSHAD
 
-	mov				sign, 1
-	mov				eax, [EBP + 12]
-	mov				StringRef, eax
-	mov				eax, [EBP + 16]	
-	mov				StringMaxLen, eax		
+	MOV					sign, 1
+	MOV					eax, [EBP + 12]
+	MOV					StringRef, eax
+	MOV					eax, [EBP + 16]	
+	MOV					StringMaxLen, eax		
 
 
 _PromptUserInput:
 
-	mov				edx, [EBP + 52]	
-	mov				NumsEntered, edx										   ;output variable to hold nums entered
+	MOV					edx, [EBP + 52]	
+	MOV					NumsEntered, edx										   ;output variable to hold nums entered
 						
-	mov				edx,[EBP + 8]
-	mov				messagePrompt, edx										   ;prompt num	
+	MOV					edx,[EBP + 8]
+	MOV					messagePrompt, edx										   ;prompt num	
 
-    mGetString	    StringRef, StringMaxLen, NumsEntered, messagePrompt 	   ;pass string output by ref, size by value, and nums entered by ref to macro
+    mGetString			StringRef, StringMaxLen, NumsEntered, messagePrompt 	   ;pass string output by ref, size by value, and nums entered by ref to macro
 
-	mov			    edx, [EBP + 52]	
-	mov				edx, [edx]
-	mov				NumsEntered, edx										   ;output variable from macro to local variable
+	MOV					edx, [EBP + 52]	
+	MOV					edx, [edx]
+	MOV					NumsEntered, edx										   ;output variable from macro to local variable
 
 
 
@@ -281,63 +281,63 @@ _PromptUserInput:
 ;*****************************************************************************************************************************************************
 
 
-	mov				ECX, NumsEntered										   ;test if no nums entered using local variable
-	cmp				ECX, 0
-	jz				_noInputError
-	cmp				ECX, 11
-	jg				_numTooLargeError
-	mov				ESI, StringRef											   ;if nums were entered, then start loop
-	mov				ECX, StringMaxLen										   ;test if no nums entered using local variable
-	mov				numTemp, 0
+	MOV					ECX, NumsEntered				; test if no nums entered using local variable
+	CMP					ECX, 0
+	jz					_noInputError
+	CMP					ECX, 11
+	jg					_numTooLargeError
+	MOV					ESI, StringRef					; if nums were entered, then start loop
+	MOV					ECX, StringMaxLen				; test if no nums entered using local variable
+	MOV					numTemp, 0
 
 
 ;==================LOOP TO CONVERT STRING STARTS HERE======================================================================================
 _convertString:	
-	LODSB						;takes ESI and copies to AL, then increment ESI to next element
-	cmp AL, 0
-	jz _FinishedConvertingtoNum
-	cmp AL, 48					;nums are from 48 to 57; + is 43 and - is 45
-	jl	_checkifSign	
-	cmp AL, 57
-	jg	_NotNumError
-	jmp _Convert	
+	LODSB												; takes ESI and copies to AL, then increment ESI to next element
+	CMP					AL, 0
+	jz					_FinishedConvertingtoNum
+	CMP					AL, 48							; nums are from 48 to 57; + is 43 and - is 45
+	jl					_checkifSign	
+	CMP					AL, 57
+	jg					_NotNumError
+	jmp					_Convert	
 
 
 _checkifSign:
-	cmp AL, 43					; + sign
-	jz	_TestifFirstDigitPlus
-	cmp AL, 45					; - sign
-	jz	_TestifFirstDigitMinus
-	jmp _NotNumError
+	CMP					AL, 43							; + sign
+	jz					_TestifFirstDigitPlus
+	CMP					AL, 45							; - sign
+	jz					_TestifFirstDigitMinus
+	jmp					_NotNumError
 
 _Convert:
-	PUSH [EBP + 36]			    ; temp return variable from ConvertASCIItoNum
-	PUSH EAX					; this pushes AL and garbage values
-	CALL ConvertASCIItoNum	
+	PUSH				[EBP + 36]						; temp return variable from ConvertASCIItoNum
+	PUSH				EAX								; this pushes AL and garbage values
+	CALL				ConvertASCIItoNum	
 	
-	mov EAX, numTemp			; tempNum to hold digits
+	MOV					EAX, numTemp					; tempNum to hold digits
 
-	cmp EAX, 214748364
-	jg  _numTooLargeError
+	CMP					EAX, 214748364
+	jg					_numTooLargeError
 
 
-	mov ebx, 10
-	mul ebx						; multiply by 10 then loop
-	push eax					; save multiplied numTemp
+	MOV					ebx, 10
+	mul					ebx								; multiply by 10 then loop
+	push				eax								; save multiplied numTemp
 
-	mov ebx, [EBP + 36]		
-	mov eax, [ebx]				; return variable from ConvertASCIItoNum
-	mov returnValueAscii, eax	; save return variable from ConvertASCIItoNum
+	MOV					ebx, [EBP + 36]		
+	MOV					eax, [ebx]						; return variable from ConvertASCIItoNum
+	MOV					returnValueAscii, eax			; save return variable from ConvertASCIItoNum
 
-	pop eax						; restore multipled value to eax
-	add returnValueAscii, eax	; add to return variable
-	mov	eax, returnValueAscii	; move num so far to eax
-	mov numTemp, EAX			; save to numTemp for next loop
+	pop					eax								; restore multipled value to eax
+	add					returnValueAscii, eax			; add to return variable
+	MOV					eax, returnValueAscii			; move num so far to eax
+	MOV					numTemp, EAX					; save to numTemp for next loop
 
 _NextLoop:
 	
-	loop _ConvertString
-	jmp _FinishedConvertingtoNum
+	loop				_ConvertString
+	jmp					_FinishedConvertingtoNum
 ;==================LOOP TO CONVERT STRING ENDS HERE========================================================================================
 
 
@@ -345,40 +345,40 @@ _NextLoop:
 ;Errors and testing if + or - if first char
 _NotNumError:
 	
-	mDisplayString [EBP + 24]				; not num string
-	call CrLf
-	call CrLF
-	jmp _PromptUserInput
+	mDisplayString		[EBP + 24]				; not num string
+	call				CrLf
+	call				CrLF
+	jmp					_PromptUserInput
 
 
 _noInputError:
-	mDisplayString [EBP + 28]				; no input string
-	call CrLf
-	call CrLF
-	jmp _PromptUserInput
+	mDisplayString		[EBP + 28]				; no input string
+	call				CrLf
+	call				CrLF
+	jmp					_PromptUserInput
 
 _TestifFirstDigitPlus:
-	cmp NumsEntered, 1
-	jz _noInputError
-	cmp StringMaxLen, ECX
-	jnz _signNotFirstError
-	mov sign, 1	
-	jmp _NextLoop
+	CMP					NumsEntered, 1
+	jz					_noInputError
+	CMP					StringMaxLen, ECX
+	jnz					_signNotFirstError
+	MOV					sign, 1	
+	jmp					_NextLoop
 
 
 _TestifFirstDigitMinus:
-	cmp NumsEntered, 1
-	jz _noInputError
-	cmp StringMaxLen, ECX
-	jnz _signNotFirstError
-	mov sign, 2							    ; local variable set as negative
-	jmp _NextLoop
+	CMP					NumsEntered, 1
+	jz					_noInputError
+	CMP					StringMaxLen, ECX
+	jnz					_signNotFirstError
+	MOV					sign, 2					; local variable set as negative
+	jmp					_NextLoop
 
 _signNotFirstError:
-	mDisplayString [EBP + 20]				; prompt num	
-	call CrLf
-	call CrLF
-	jmp _PromptUserInput
+	mDisplayString		[EBP + 20]				; prompt num	
+	call				CrLf
+	call				CrLF
+	jmp					_PromptUserInput
 
 
 
@@ -389,52 +389,52 @@ _signNotFirstError:
 
 _FinishedConvertingtoNum:
 	
-	cmp sign, 2
-	jz _convertNumtoNegative
-	jmp _testIfNumtooLarge
+	CMP					sign, 2
+	jz					_convertNumtoNegative
+	jmp					_testIfNumtooLarge
 	
 
 _convertNumtoNegative:
-	mov eax, returnValueAscii  
-	neg eax
-	mov returnValueAscii, eax 
+	MOV					eax, returnValueAscii  
+	neg					eax
+	MOV					returnValueAscii, eax 
 
 
 _testIfNumtooLarge:
-	mov EAX, returnValueAscii	
-	cmp EAX, 2147483647
-	jg	_numTooLargeError
-	cmp EAX, -2147483647
-	jl	_numTooLargeError
-	jmp _storeNumtoArray
+	MOV					EAX, returnValueAscii	
+	CMP					EAX, 2147483647
+	jg					_numTooLargeError
+	CMP					EAX, -2147483647
+	jl					_numTooLargeError
+	jmp					_storeNumtoArray
 
 _numTooLargeError:
-	mDisplayString [EBP + 48]	
-	call CrLf
-	call CrLF
-	jmp _PromptUserInput	
+	mDisplayString		[EBP + 48]	
+	call				CrLf
+	call				CrLF
+	jmp					_PromptUserInput	
 	
 
 
 _storeNumtoArray:
 
-	mov     ESI, [EBP + 40]				    ; offset of int array		
-	MOV		EAX, [EBP + 44]					; offset IntegerArray length variable to track how many elements are in array
-	mov		EAX, [EAX]
-	mov		arrayelements, EAX				; local variable
-	mov		EBX, 4
-	mul		EBX	
-	mov		ECX, returnValueAscii
-	mov		[ESI + EAX], ECX				; store num in int array + offset to put in the last postion of the array
+	MOV					ESI, [EBP + 40]				    ; offset of int array		
+	MOV					EAX, [EBP + 44]					; offset IntegerArray length variable to track how many elements are in array
+	MOV					EAX, [EAX]
+	MOV					arrayelements, EAX				; local variable
+	MOV					EBX, 4
+	mul					EBX	
+	MOV					ECX, returnValueAscii
+	MOV					[ESI + EAX], ECX				; store num in int array + offset to put in the last postion of the array
 
-	mov		EDI, [EBP + 44]
-	inc		arrayelements
-	mov		eax, arrayelements
-	MOV	    [EDI], eax						;store count of array elements
+	MOV					EDI, [EBP + 44]
+	inc					arrayelements
+	MOV					eax, arrayelements
+	MOV					[EDI], eax						;store count of array elements
 
 
 	POPAD
-	RET 44									; dereference passed parameters
+	RET 44									
 
 
 ReadVal ENDP
@@ -460,78 +460,78 @@ ConvertASCIItoNum PROC
 	LOCAL numText:BYTE 
 	PUSHAD
 
-	mov EAX, [EBP + 8]		;whole EAX register
-	mov EBX, [EBP + 12]		;output variable
+	MOV EAX,			[EBP + 8]			; whole EAX register
+	MOV EBX,			[EBP + 12]			; output variable
 
-	mov numText, AL			;technically comparing AL here
+	MOV					numText, AL			; technically comparing AL here
 
 
-	cmp numText, 48
-	jz _zero
-	cmp numText, 49
-	jz _one
-	cmp numText, 50
-	jz _two
-	cmp numText, 51
-	jz _three
-	cmp numText, 52
-	jz _four
-	cmp numText, 53
-	jz _five
-	cmp numText, 54
-	jz _six
-	cmp numText, 55
-	jz _seven
-	cmp numText, 56
-	jz _eight
-	cmp numText, 57
-	jz _nine
+	CMP					numText, 48
+	jz					_zero
+	CMP					numText, 49
+	jz					_one
+	CMP					numText, 50
+	jz					_two
+	CMP					numText, 51
+	jz					_three
+	CMP					numText, 52
+	jz					_four
+	CMP					numText, 53
+	jz					_five
+	CMP					numText, 54
+	jz					_six
+	CMP					numText, 55
+	jz					_seven
+	CMP					numText, 56
+	jz					_eight
+	CMP					numText, 57
+	jz					_nine
 
 
 _zero:
-	mov EAX, 0
-	jmp _return
+	MOV					EAX, 0
+	jmp					_return
 
 _one:
-	mov EAX, 1
-	jmp _return
+	MOV					EAX, 1
+	jmp					_return
 
 _two:
-	mov EAX, 2
-	jmp _return
+	MOV					EAX, 2
+	jmp					_return
 
 _three:
-	mov EAX, 3
-	jmp _return
+	MOV					EAX, 3
+	jmp					_return
 
 _four:
-	mov EAX, 4
-	jmp _return
+	MOV					EAX, 4
+	jmp					_return
 
 _five:
-	mov EAX, 5
-	jmp _return
+	MOV					EAX, 5
+	jmp					_return
 
 _six:
-	mov EAX, 6
-	jmp _return
+	MOV					EAX, 6
+	jmp					_return
 
 _seven:
-	mov EAX, 7
-	jmp _return
+	MOV					EAX, 7
+	jmp					_return
 
 _eight:
-	mov EAX, 8
-	jmp _return
+	MOV					EAX, 8
+	jmp					_return
 
 _nine:
-	mov EAX, 9
-	jmp _return
+	MOV					EAX, 9
+	jmp					_return
 
 
 
 _return:
-	mov [EBX],EAX	;move result to output variable
+	MOV					[EBX],EAX	;move result to output variable
 	
 	POPAD
 	ret 8
@@ -560,193 +560,192 @@ ConvertNumtoASCII PROC
 	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, newStringLen:DWORD, negativeFlag:DWORD
 	PUSHAD
 
-	mov negativeFlag, 1
+	MOV					negativeFlag, 1
 
-	mov ecx, 32
-	mov EDI, [EBP + 12]		; temp string1 offset from stack
+	MOV					ecx, 32
+	MOV					EDI, [EBP + 12]		; temp string1 offset from stack
 
 _ClearString_one:
-	mov EAX, 0
-	mov [EDI], EAX
-	add EDI, 1
-	loop _ClearString_one
+	MOV					EAX, 0
+	MOV					[EDI], EAX
+	add					EDI, 1
+	loop				_ClearString_one
 
 
 	
-mov ecx, 32
-mov EDI, [EBP + 16]		; temp string 2 offset from stack
+	MOV					ecx, 32
+	MOV					EDI, [EBP + 16]		; temp string 2 offset from stack
 
 _ClearString_two:
-	mov EAX, 0
-	mov [EDI], EAX
-	add EDI, 1
-	loop _ClearString_two
+	MOV					EAX, 0
+	MOV					[EDI], EAX
+	add					EDI, 1
+	loop				_ClearString_two
 
 
 
 
+	MOV					EDI, [EBP + 12]		; temp string offset from stack
+	MOV					EAX, [EBP + 8]		; integer from stack
 
-	mov EDI, [EBP + 12]		; temp string offset from stack
-	mov EAX, [EBP + 8]		; integer from stack
-
-	mov	num, EAX
-	mov newStringLen, 0
+	MOV					num, EAX
+	MOV					newStringLen, 0
 
 	;test if number is negative, if so we need to reverse it and add a negative sign in front
-	cmp EAX, 0
-	jl	_numIsNegativeInvert
-	cmp EAX, 0
-	jz _NumisJustZero
-	jmp _MainConversionLoop
+	CMP					EAX, 0
+	jl					_numIsNegativeInvert
+	CMP					EAX, 0
+	jz					_NumisJustZero
+	jmp					_MainConversionLoop
 
 
 	;test if number is just zero
 
 _numIsNegativeInvert:
-	neg eax
-	mov num, eax
-	mov negativeFlag, 2
+	neg					eax
+	MOV					num, eax
+	MOV					negativeFlag, 2
 
 
 
 _MainConversionLoop:
 	;need to repeatedly divide by 10, multiply by zeros until no remainder left, then reverse string array created.
 
-	mov EAX, num
+	MOV					EAX, num
 	CDQ 
-	mov ebx, 10
-	IDIV ebx
-	mov quotient, EAX
-	mov remainder, EDX
+	MOV					ebx, 10
+	IDIV				ebx
+	MOV					quotient, EAX
+	MOV					remainder, EDX
 
-	cmp remainder, 0
-	jg _remainderExists
-	cmp quotient, 0
-	jg _Quotient						; if no quotient and remainder
-	jmp _AddTERMINATOR
+	CMP					remainder, 0
+	jg					_remainderExists
+	CMP					quotient, 0
+	jg					_Quotient						; if no quotient and remainder
+	jmp					_AddTERMINATOR
 
 
 _Quotient:
-	mov EAX, 0
-	mov num, EAX
-	jmp _startNumConversion
+	MOV					EAX, 0
+	MOV					num, EAX
+	jmp					_startNumConversion
 
 _remainderExists:
-	mov EAX, remainder
-	mov num, EAX
-	jmp _startNumConversion
+	MOV					EAX, remainder
+	MOV					num, EAX
+	jmp					_startNumConversion
 
 
 _startNumConversion:
-	cmp num, 0
-	jz _zero_num
-	cmp num, 1
-	jz _one_num
-	cmp num, 2
-	jz _two_num
-	cmp num, 3
-	jz _three_num
-	cmp num, 4
-	jz _four_num
-	cmp num, 5
-	jz _five_num
-	cmp num, 6
-	jz _six_num
-	cmp num, 7
-	jz _seven_num
-	cmp num, 8
-	jz _eight_num
-	cmp num, 9
-	jz _nine_num
+	CMP					num, 0
+	jz					_zero_num
+	CMP					num, 1
+	jz					_one_num
+	CMP					num, 2
+	jz					_two_num
+	CMP					num, 3
+	jz					_three_num
+	CMP					num, 4
+	jz					_four_num
+	CMP					num, 5
+	jz					_five_num
+	CMP					num, 6
+	jz					_six_num
+	CMP					num, 7
+	jz					_seven_num
+	CMP					num, 8
+	jz					_eight_num
+	CMP					num, 9
+	jz					_nine_num
 
 
 _zero_num:
-	mov AL, 48 
-	jmp add_num_to_string
+	MOV					AL, 48 
+	jmp					add_num_to_string
 
 _one_num:
-	mov AL, 49 
-	jmp add_num_to_string
+	MOV					AL, 49 
+	jmp					add_num_to_string
 
 _two_num:
-	mov AL, 50 
-	jmp add_num_to_string
+	MOV					AL, 50 
+	jmp					add_num_to_string
 
 _three_num:
-	mov AL, 51 
-	jmp add_num_to_string
+	MOV					AL, 51 
+	jmp					add_num_to_string
 
 _four_num:
-	mov AL, 52
-	jmp add_num_to_string
+	MOV					AL, 52
+	jmp					add_num_to_string
 
 _five_num:
-	mov AL, 53 
-	jmp add_num_to_string
+	MOV					AL, 53 
+	jmp					add_num_to_string
 
 _six_num:
-	mov AL, 54 
-	jmp add_num_to_string
+	MOV					AL, 54 
+	jmp					add_num_to_string
 
 _seven_num:
-	mov AL, 55 
-	jmp add_num_to_string
+	MOV					AL, 55 
+	jmp					add_num_to_string
 
 _eight_num:
-	mov AL, 56
-	jmp add_num_to_string
+	MOV					AL, 56
+	jmp					add_num_to_string
 
 _nine_num:
-	mov AL, 57 
-	jmp add_num_to_string
+	MOV					AL, 57 
+	jmp					add_num_to_string
 
 _NumisJustZero:
-	mov AL, 48
-	mov [EDI], AL	;move result to output variable
-	add EDI, 1		;increment
-	inc newStringLen
-	jmp _AddTERMINATOR
+	MOV					AL, 48
+	MOV					[EDI], AL				; move result to output variable
+	add					EDI, 1					; increment
+	inc					newStringLen
+	jmp					_AddTERMINATOR
 
 add_num_to_string:
-	mov [EDI], AL	;move result to output variable
-	add EDI, 1		;increment
-	mov EAX, quotient
-	mov num, EAX
-	inc newStringLen
-	jmp _MainConversionLoop
+	MOV					[EDI], AL				; move result to output variable
+	add					EDI, 1					; increment
+	MOV					EAX, quotient
+	MOV					num, EAX
+	inc					newStringLen
+	jmp					_MainConversionLoop
 
 
 _AddTERMINATOR:
-	mov	AL, 0
-	mov [EDI], AL	;move result to output variable
-	inc newStringLen
+	MOV					AL, 0
+	MOV					[EDI], AL				; move result to output variable
+	inc					newStringLen
 
 
 _FinishConvertingNumtoString:
 
 	;NEED TO REVERSE STRING AFTERWARDS
-	mov ECX, newStringLen
-	mov ESI, [EBP + 12]		; temp string offset from stack
-	add ESI, ECX			; so source strings starts from end
-	dec ESI
-	dec ESI
-	mov EDI, [EBP + 16]		; temp string offset2 from stack
+	MOV					ECX, newStringLen
+	MOV					ESI, [EBP + 12]			; temp string offset from stack
+	add					ESI, ECX				; so source strings starts from end
+	dec					ESI
+	dec					ESI
+	MOV					EDI, [EBP + 16]			; temp string offset2 from stack
 	
-	cmp negativeFlag, 2
-	jz _addNegativeSignBeforeReversal
-	jmp _revLoop
+	CMP					negativeFlag, 2
+	jz					_addNegativeSignBeforeReversal
+	jmp					_revLoop
 
 _addNegativeSignBeforeReversal:
-	mov EAX, 45
-	mov [EDI], EAX		; temp string offset2 from stack
-	add edi, 1
+	MOV					EAX, 45
+	MOV					[EDI], EAX				; temp string offset2 from stack
+	add					edi, 1
 
-_revLoop: ;reference StringManipulator.asm from canvas
+_revLoop:										;reference StringManipulator.asm from canvas
 	STD
 	LODSB
 	CLD
 	STOSB
-	LOOP _revLoop
+	LOOP				_revLoop
 
 
 
@@ -754,10 +753,6 @@ _revLoop: ;reference StringManipulator.asm from canvas
 	ret 12
 
 ConvertNumtoASCII ENDP
-
-
-
-
 
 
 ; =======================================================================================================================================================
@@ -778,25 +773,25 @@ CalculateSum PROC
 	LOCAL num:SDWORD 
 	PUSHAD
 
-	mov num, 0
+	MOV					num, 0
 
-	mov ECX, [EBP + 12]		; OFFSET IntegerArray_len
-	mov ECX, [ECX]
-	mov EDI, [EBP + 8]		; OFFSET IntegerArray
+	MOV					ECX, [EBP + 12]		; OFFSET IntegerArray_len
+	MOV					ECX, [ECX]
+	MOV					EDI, [EBP + 8]		; OFFSET IntegerArray
 
 _SumLoop:	
-	mov EAX, [EDI]
-	mov EBX, num
-	add EAX, EBX
-	mov num, EAX
-	add EDI, 4
+	MOV					EAX, [EDI]
+	MOV					EBX, num
+	add					EAX, EBX
+	MOV					num, EAX
+	add					EDI, 4
 
-	LOOP _SumLoop
+	LOOP				_SumLoop
 
 	
-	mov EAX, [EBP + 16]		; OFFSET sum_all_nums
-	mov EBX, num
-	mov [EAX], EBX
+	MOV					EAX, [EBP + 16]		; OFFSET sum_all_nums
+	MOV					EBX, num
+	MOV					[EAX], EBX
 
 
 	POPAD
@@ -823,38 +818,38 @@ CalculateAverage PROC
 	LOCAL num:SDWORD, quotient:SDWORD, remainder:SDWORD, divisor:DWORD, dividend: SDWORD ;,doubledRemainder:SDWORD, 
 	PUSHAD
 
-	mov num, 0
-	mov ECX, [EBP + 8]		; OFFSET IntegerArray_len
-	mov ECX, [ECX]
-	mov divisor, ECX
-	mov EAX, [EBP + 12]		; OFFSET sum_all_nums
-	mov EAX, [EAX]
-	mov dividend, EAX
+	MOV					num, 0
+	MOV					ECX, [EBP + 8]		; OFFSET IntegerArray_len
+	MOV					ECX, [ECX]
+	MOV					divisor, ECX
+	MOV					EAX, [EBP + 12]		; OFFSET sum_all_nums
+	MOV					EAX, [EAX]
+	MOV					dividend, EAX
 	CDQ
-	IDIV ECX
+	IDIV				ECX
 
-	mov quotient, EAX
-	mov remainder, EDX
+	MOV					quotient, EAX
+	MOV					remainder, EDX
 ;
 ; ***********COMMENTED OUT AS PROJECT INSTRUCTIONS CHANGED FROM ROUNDING TO TRUNCATION - REFERENCE ED DISCUSSION 1661642****************
 ;
-;	mov EAX, remainder
-;	mov EBX, 2
+;	MOV EAX, remainder
+;	MOV EBX, 2
 ;	mul EBX
-;	mov doubledRemainder, EAX
+;	MOV doubledRemainder, EAX
 ;
 ;
-;	cmp dividend, 0
+;	CMP dividend, 0
 ;	jl	_testNegativeRounding
 ;	jmp _testPositiveRounding
 ;
 ;_testNegativeRounding:
-;	cmp EAX, dividend
+;	CMP EAX, dividend
 ;	jle _roundNegativeDown
 ;	jmp _saveValue
 ;
 ;_testPositiveRounding:
-;	cmp EAX, dividend
+;	CMP EAX, dividend
 ;	jge _roundPositiveUp
 ;	jmp _saveValue
 ;
@@ -867,16 +862,15 @@ CalculateAverage PROC
 
 _saveValue:
 
-	mov EAX, [EBP + 16]		; OFFSET rounded_avg
-	mov EBX, quotient
-	mov [EAX], ebx	
+	MOV					EAX, [EBP + 16]		; OFFSET rounded_avg
+	MOV					EBX, quotient
+	MOV					[EAX], ebx	
 
 
 	POPAD
 	ret 12
 
 CalculateAverage ENDP
-
 
 
 ; =======================================================================================================================================================
@@ -899,44 +893,40 @@ WriteVal PROC
 	LOCAL num:SDWORD, arrayLengthNum:SDWORD, integerArrayReference:SDWORD
 	PUSHAD
 
-	mov ECX, [EBP + 12]		; OFFSET integer array length from stack for LOOP counter
-	mov ECX, [ECX]
-	mov arrayLengthNum, ECX
-	mov ESI, [EBP + 8]		; OFFSET integer array from stack
-	mov integerArrayReference, ESI
+	MOV					ECX, [EBP + 12]					; OFFSET integer array length from stack for LOOP counter
+	MOV					ECX, [ECX]
+	MOV					arrayLengthNum, ECX
+	MOV					ESI, [EBP + 8]					; OFFSET integer array from stack
+	MOV					integerArrayReference, ESI
 
 
 _convertLoop:
+	MOV					EAX, [EBP + 24]					; OFFSET temp_string2 RETURN VARIABLE from stack	
+	PUSH				EAX								; push temp_string for ConvertNumtoASCII proc
 
-	mov EAX, [EBP + 24]		; OFFSET temp_string2 RETURN VARIABLE from stack	
-	PUSH EAX				; push temp_string for ConvertNumtoASCII proc
+	MOV					EAX, [EBP + 20]					; OFFSET temp_string RETURN VARIABLE from stack	
+	PUSH				EAX								; push temp_string for ConvertNumtoASCII proc
 
-	mov EAX, [EBP + 20]		; OFFSET temp_string RETURN VARIABLE from stack	
-	PUSH EAX				; push temp_string for ConvertNumtoASCII proc
+	MOV					EBX, [ESI]						; save value in EBX
+	PUSH				EBX								; push int from integer array by value for ConvertNumtoASCII proc
 
-	mov EBX, [ESI]			; save value in EBX
-	PUSH EBX				; push int from integer array by value for ConvertNumtoASCII proc
+	CALL				ConvertNumtoASCII				; parameter order: return string, int by val
 
-	CALL ConvertNumtoASCII  ; parameter order: return string, int by val
-
-	mov EAX, [EBP + 24]		; access return value from stack that ConvertNumtoASCII used with temp string
+	MOV					EAX, [EBP + 24]					; access return value from stack that ConvertNumtoASCII used with temp string
 	
-	mov num, EAX
-	mDisplayString num
+	MOV					num, EAX
+	mDisplayString		num
 
-	cmp ECX, 1
-	jz _noComma
+	CMP					ECX, 1
+	jz					_noComma
 
 _writeComma:	
-	mov EAX, [EBP + 28]		;comma string
-	mDisplayString EAX
+	MOV					EAX, [EBP + 28]					;comma string
+	mDisplayString		EAX
 
 _noComma:
-
-	add ESI, 4				; increment int array
-
-	LOOP _convertLoop
-	
+	add					ESI, 4							; increment int array
+	LOOP				_convertLoop
 	
 	
 	POPAD
@@ -969,35 +959,33 @@ getStringLen PROC
 	LOCAL StringLen:DWORD
 	PUSHAD
 
-	mov ECX, 30				;max length for counter
-	mov ESI, [EBP + 12]		;output ref
+	MOV					ECX, 30				; max length for counter
+	MOV					ESI, [EBP + 12]		; output ref
 
-	mov StringLen, 0
+	MOV					StringLen, 0
 	
 _countLoop:
 	LODSB	
-	cmp AL, 0
-	jle _end
-	cmp AL, 43			; + sign
-	jz _nocount
-	cmp AL, 45			; - sign
-	jz _nocount
-	inc StringLen
+	CMP					AL, 0
+	jle					_end
+	CMP					AL, 43				; + sign
+	jz					_nocount
+	CMP					AL, 45				; - sign
+	jz					_nocount
+	inc					StringLen
 
 _nocount:
-	loop _countLoop
+	loop				_countLoop
 	
-_end:
-	
-	mov EAX, StringLen		;LOCAL VARIABLE
-	mov EDX, [EBP + 16] 	;move count to output variable
-	mov [EDX], EAX 			;move count to output variable
+_end:	
+	MOV					EAX, StringLen		; LOCAL VARIABLE
+	MOV					EDX, [EBP + 16] 	; move count to output variable
+	MOV					[EDX], EAX 			; move count to output variable
 	
 	POPAD
 	ret 12
 
 getStringLen ENDP
-
 
 
 ; =======================================================================================================================================================
@@ -1010,11 +998,12 @@ getStringLen ENDP
 ; =======================================================================================================================================================
 setTextColorWhite PROC
 	pushad
-	mov		eax, white 
-	call	SetTextColor
+	MOV					eax, white 
+	call				SetTextColor
 	popad
 	ret
 setTextColorWhite ENDP
+
 
 ; =======================================================================================================================================================
 ; Name:	setTextColorGreen
@@ -1026,15 +1015,10 @@ setTextColorWhite ENDP
 ; =======================================================================================================================================================
 setTextColorGreen PROC	
 	pushad
-	mov		eax, green 
-	call	SetTextColor
+	MOV					eax, green 
+	call				SetTextColor
 	popad
 	ret
 setTextColorGreen ENDP
-
-
-
-
-
 
 END main

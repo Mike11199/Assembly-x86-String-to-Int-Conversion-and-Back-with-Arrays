@@ -661,7 +661,6 @@ _numIsNegativeInvert:
 	MOV					negativeFlag, 2
 
 
-
 _MainConversionLoop:
 	;need to repeatedly divide by 10, multiply by zeros until no remainder left, then reverse string array created.
 

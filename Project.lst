@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/07/22 15:31:01
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/07/22 15:37:14
 <Project 6 - String Primitives and Macros      (Proj6_iwanek  Page 1 - 1
 
 
@@ -1000,7 +1000,6 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/07/22 15:31:01
 	   00000002
 
 
-
  00000458			_MainConversionLoop:
 					;need to repeatedly divide by 10, multiply by zeros until no remainder left, then reverse string array created.
 
@@ -1446,7 +1445,7 @@ Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/07/22 15:31:01
  00000645			setTextColorGreen ENDP
 
 				END main
-Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/07/22 15:31:01
+Microsoft (R) Macro Assembler Version 14.29.30133.0	    08/07/22 15:37:14
 <Project 6 - String Primitives and Macros      (Proj6_iwanek  Symbols 2 - 1
 
 

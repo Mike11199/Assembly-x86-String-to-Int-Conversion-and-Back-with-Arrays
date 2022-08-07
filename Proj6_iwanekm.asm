@@ -100,7 +100,7 @@ program_info_1		BYTE		"Hello!  Welcome to my program:  String Primitives and Mac
 program_info_2		BYTE		"Please enter in 10 signed decimal integers.  This program will then display each number entered, their average value, and sum.",13,10,13,10
 					BYTE		"It will do this without using any Irvine procedures to read/write numbers, but will instead convert inputted strings to numbers using an algorithm.",13,10,13,10
 					BYTE		"After storing these numbers to an array, it will use another algorithm to convert these numbers back to strings to be displayed to the console.  ",13,10,13,10
-					BYTE		"Each number must be able to fit within a 32 bit register, or be between the values of -2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",13,10,13,10,0
+					BYTE		"Each number must be able to fit within a 32 bit register, or be between the values of -2,147,483,648 and 2,147,483,647 inclusive (or -2^31 to 2^31-1).",13,10,13,10,0
 
 userString_len		DWORD		?
 temp_num			SDWORD		?
@@ -117,11 +117,11 @@ IntegerArray		SDWORD		10 DUP(?)
 StringArray			SDWORD		10 DUP(?)
 userString_max_len	DWORD		LENGTHOF userString
 
-num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31: ",0
+num_prompt			BYTE		"Please enter a signed number between -2^31 and 2^31-1: ",0
 Error_no_input		BYTE		"Error!  You didn't enter in any numbers.",0 
 Error_char_num		BYTE		"Error!  You can only enter numbers, and the plus or minus sign.",0 
 Error_sign_use		BYTE		"Error!  You can only enter the plus or minus sign at the beginning of the number.",0 
-Error_too_large		BYTE		"Error!  Your number must be between the ranges of-2,147,483,647 and 2,147,483,647 inclusive (or +/- 2^31).",0 
+Error_too_large		BYTE		"Error!  Your number must be between the ranges of-2,147,483,648 and 2,147,483,647 inclusive (or -2^31 and 2^31-1).",0 
 display_1			BYTE		"You entered the following numbers: ",0 
 display_2			BYTE		"The sum of all numbers entered is: ",0 
 display_3			BYTE		"The truncated average of all numbers entered is: ",0 
@@ -264,7 +264,7 @@ ReadVal PROC
 ;	1) Invoke the mGetString macro to get user input in the form of a string of digits	
 ;*****************************************************************************************************************************************************
 
-	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:DWORD, arrayelements:DWORD, messagePrompt:DWORD
+	LOCAL StringMaxLen:DWORD, StringRef:DWORD, NumsEntered:DWORD, sign:DWORD, numTemp:DWORD, returnValueAscii:SDWORD, arrayelements:DWORD, messagePrompt:DWORD
 	PUSHAD
 
 	MOV					sign, 1
@@ -335,9 +335,8 @@ _Convert:
 	
 	MOV					EAX, numTemp					; tempNum to hold digits
 
-	CMP					EAX, 214748364
-	jg					_numTooLargeError
 
+_ConvertResume:
 
 	MOV					ebx, 10							; Multiply the number repeatedly by 10 to build up the number digit by digit from the string
 	mul					ebx								; multiply by 10 then loop
@@ -349,8 +348,10 @@ _Convert:
 
 	pop					eax								; restore multipled value to eax
 	add					returnValueAscii, eax			; add to return variable
+
 	MOV					eax, returnValueAscii			; move num so far to eax
 	MOV					numTemp, EAX					; save to numTemp for next loop
+
 
 _NextLoop:
 	
@@ -408,28 +409,39 @@ _signNotFirstError:
 _FinishedConvertingtoNum:
 	
 	CMP					sign, 2
-	jz					_convertNumtoNegative
-	jmp					_testIfNumtooLarge
+	jz					_testNegativetooLarge
+	jmp					_testPositivetooLarge
 	
 
 _convertNumtoNegative:
 	MOV					eax, returnValueAscii  
-	neg					eax
+	neg					returnValueAscii
+	MOV					eax, returnValueAscii  
 	MOV					returnValueAscii, eax 
+	MOV					EAX, returnValueAscii	
+	jmp					_storeNumtoArray
 
 
-_testIfNumtooLarge:
+_testNegativetooLarge:
+	MOV					EAX, returnValueAscii	
+	CMP					EAX, 2147483648
+	ja					_numTooLargeError
+	CMP					EAX, 2147483648
+	jz					_storeNumtoArray	; for edge case if exactly 2,147,483,648 will convert to - automatically due to SDWORD local variable
+	jmp					_convertNumtoNegative
+
+
+_testPositivetooLarge:
 	MOV					EAX, returnValueAscii	
 	CMP					EAX, 2147483647
-	jg					_numTooLargeError
-	CMP					EAX, -2147483647
-	jl					_numTooLargeError
+	ja					_numTooLargeError
 	jmp					_storeNumtoArray
 
 _numTooLargeError:
 	mDisplayString		[EBP + 48]	
 	call				CrLf
 	call				CrLF
+	mov					sign, 1
 	jmp					_PromptUserInput	
 	
 
@@ -582,7 +594,7 @@ ConvertNumtoASCII PROC
 	
 	 ; parameter order:  integer value, temp string 1, tempstring2
 
-	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, newStringLen:DWORD, negativeFlag:DWORD
+	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, newStringLen:DWORD, negativeFlag:DWORD, num2:SDWORD
 	PUSHAD
 
 	MOV					negativeFlag, 1
@@ -609,26 +621,43 @@ _ClearString_two:
 
 
 
-
 	MOV					EDI, [EBP + 12]		; temp string offset from stack
 	MOV					EAX, [EBP + 8]		; integer from stack
 
-	MOV					num, EAX
+	MOV					num2, EAX
 	MOV					newStringLen, 0
+
+	cmp				    EAX, 2147483648		;edge case
+	jz					_numNegativeinArrayEdgeCase
+	jmp					_skipEdgeCase
+
+_numNegativeinArrayEdgeCase:
+	mov				    EAX, 2147483648		;edge case
+	mov					num2, EAX
+	mov					num, EAX
+	MOV					negativeFlag, 2
+    jmp					_MainConversionLoop
+
+_skipEdgeCase:
 
 	;test if number is negative, if so we need to reverse it and add a negative sign in front
 	CMP					EAX, 0
 	jl					_numIsNegativeInvert
 	CMP					EAX, 0
 	jz					_NumisJustZero
+	mov					eax, num2
+	mov					num, eax
 	jmp					_MainConversionLoop
 
 
 	;test if number is just zero
 
 _numIsNegativeInvert:
-	neg					eax
-	MOV					num, eax
+	
+	mov					num2, eax
+	neg					num2
+	mov					eax, num2
+	mov					num, eax
 	MOV					negativeFlag, 2
 
 

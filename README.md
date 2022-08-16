@@ -19,7 +19,9 @@ remainder of each division. From this, it uses string primitve instructions to r
 
 <h2> Assembly Concepts Used </h2>
 
--This pro
+-Input/Output parameters passed onto the runtime stack and accessed wihtin procedures via Base + Offset Addressing.  This is possible as the stack frame is established by moving the value of ESP into EBP (the base pointer).
+
+-Register indirect addressing for integer SDWORD array elements (arrays of integers converted manually from user string input without ReadInt from Irvine library).
 
 
 <h2> Procedure Example - Convert Integer to String </h2>
@@ -167,7 +169,7 @@ _revLoop:										;reference StringManipulator.asm from canvas
 	LODSB
 	CLD
 	STOSB
-	LOOP				_revLoop
+	LOOP					_revLoop
 
 
 

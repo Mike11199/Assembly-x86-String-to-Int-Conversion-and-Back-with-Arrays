@@ -5,6 +5,8 @@
 
 This is my submission for CS 271 - Computer Architecture & Assembly Language Project 6, taken Summer 2022 at Oregon State University.  Per the Syllabus, this is the portfolio project, which is allowed to be made public, unlike other projects.  This was coded in Visual Studio in x86 Assembly Language, using the MASM assembler.
 
+<br>
+
 <h2> Project Description </h2>
 
 -This program allows numbers to be read/written by the users without Irvine library procedures, using manual conversion of numbers to strings and vice versa.
@@ -20,6 +22,8 @@ remainder of each division. From this, it uses string primitve instructions to r
 -It also makes use of two macros to get and display strings to the user.
 
 
+<br>
+
 <h2> Assembly Concepts Used </h2>
 
 -Input/Output parameters passed onto the runtime stack and accessed wihtin procedures via Base + Offset Addressing.  This is possible as the stack frame is established by moving the value of ESP into EBP (the base pointer).
@@ -27,12 +31,17 @@ remainder of each division. From this, it uses string primitve instructions to r
 -Register indirect addressing for integer SDWORD array elements (arrays of integers converted manually from user string input without ReadInt from Irvine library).
 
 
+<br>
+
 <h2> Procedure Example - Convert Integer to String </h2>
 
 -Here is an example of a procedure used in the program.  It repeatedly divides an integer by 10 and converts its remainder to a string.  It then has to reverse the string at the end, and add a negative sign if the integer was negative.  It handles base cases, such as zeroes in the middle of the string, or the number only being a zero, which can cause issues.
 
 -In retrospect some of the loops could have been improved.  For example, I could have added 48 to arrive at the ASCII char representation of a number, instead of comparing each digit manually.  This was done as at the time I was having difficulty moving values between the EAX and AL register, which I believe could have been resolved using the PTR operator.
 
+
+
+<br>
 
 ```assembly
 _MainConversionLoop:

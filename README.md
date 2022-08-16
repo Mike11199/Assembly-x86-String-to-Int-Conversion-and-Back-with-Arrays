@@ -20,109 +20,20 @@ remainder of each division. From this, it uses string primitve instructions to r
 
 
 ```assembly
-; =======================================================================================================================================================
-; Name:				ConvertNumtoASCII
-;
-; Description:		-This is passed an integer by reference.  It repeatedly divides this integer by 10 to obtain its digits.  It adds each remainder after
-;					 the division by 10 to a string, then adds a null terminator.  It then reverses the string using string primitives so that it is in the
-;					 original order the number was entered in by the user (as a string).
-;
-; Preconditions:	-none
-;
-; Postconditions:	-none
-;
-; Receives:			-Offsets of the two output strings needed by reference.  One to hold the string being created after multiple divisions by 10, the other
-;					 to hold the reversed string.  Also receives the integer by reference to be divided.  Does not receive length, stops when both the quotient
-;					 and the remainder are both zero.  Due to this, has a special case to handle being given a number that is exactly zero.
-;
-; Returns:			-Returns
-;
-; =======================================================================================================================================================
-ConvertNumtoASCII PROC
-	
-	 ; parameter order:  integer value, temp string 1, tempstring2
-
-	LOCAL num:DWORD, quotient:DWORD, remainder:DWORD, newStringLen:DWORD, negativeFlag:DWORD, num2:SDWORD
-	PUSHAD
-
-	MOV					negativeFlag, 1
-
-	MOV					ecx, 32
-	MOV					EDI, [EBP + 12]		; temp string1 offset from stack
-
-_ClearString_one:
-	MOV					EAX, 0
-	MOV					[EDI], EAX
-	add					EDI, 1
-	loop				_ClearString_one
-
-
-	
-	MOV					ecx, 32
-	MOV					EDI, [EBP + 16]		; temp string 2 offset from stack
-
-_ClearString_two:
-	MOV					EAX, 0
-	MOV					[EDI], EAX
-	add					EDI, 1
-	loop				_ClearString_two
-
-
-
-	MOV					EDI, [EBP + 12]		; temp string offset from stack
-	MOV					EAX, [EBP + 8]		; integer from stack
-
-	MOV					num2, EAX
-	MOV					newStringLen, 0
-
-	cmp				    EAX, 2147483648		;edge case
-	jz					_numNegativeinArrayEdgeCase
-	jmp					_skipEdgeCase
-
-_numNegativeinArrayEdgeCase:
-	mov				    EAX, 2147483648		;edge case
-	mov					num2, EAX
-	mov					num, EAX
-	MOV					negativeFlag, 2
-    jmp					_MainConversionLoop
-
-_skipEdgeCase:
-
-	;test if number is negative, if so we need to reverse it and add a negative sign in front
-	CMP					EAX, 0
-	jl					_numIsNegativeInvert
-	CMP					EAX, 0
-	jz					_NumisJustZero
-	mov					eax, num2
-	mov					num, eax
-	jmp					_MainConversionLoop
-
-
-	;test if number is just zero
-
-_numIsNegativeInvert:
-	
-	mov					num2, eax
-	neg					num2
-	mov					eax, num2
-	mov					num, eax
-	MOV					negativeFlag, 2
-
-
 _MainConversionLoop:
+	
 	;need to repeatedly divide by 10, multiply by zeros until no remainder left, then reverse string array created.
-
 	MOV					EAX, num
 	CDQ 
 	MOV					ebx, 10
-	IDIV				ebx
+	IDIV					ebx
 	MOV					quotient, EAX
 	MOV					remainder, EDX
 
 	CMP					remainder, 0
 	jg					_remainderExists
 	CMP					quotient, 0
-	jg					_Quotient						; if no quotient and remainder
+	jg					_Quotient				; if no quotient and remainder
 	jmp					_AddTERMINATOR
 
 

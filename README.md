@@ -147,11 +147,11 @@ _FinishConvertingNumtoString:
 
 	;NEED TO REVERSE STRING AFTERWARDS
 	MOV					ECX, newStringLen
-	MOV					ESI, [EBP + 12]			; temp string offset from stack
+	MOV					ESI, [EBP + 12]				; temp string offset from stack
 	add					ESI, ECX				; so source strings starts from end
 	dec					ESI
 	dec					ESI
-	MOV					EDI, [EBP + 16]			; temp string offset2 from stack
+	MOV					EDI, [EBP + 16]			        ; temp string offset2 from stack
 	
 	CMP					negativeFlag, 2
 	jz					_addNegativeSignBeforeReversal

@@ -21,8 +21,8 @@ This is my submission for CS 271 - Computer Architecture & Assembly Language Pro
 -First, the program prompts the user to enter in a series of 10 numbers as strings.  It then converts each string into a number using the ReadVal procedure and adds it to an SDWORD array.  It accomplishes this without Irvine library procedures, by REPEATEDLY MULTIPLYING each character of the string converted to a number by 10, building up a decimal number digit by digit.
 
 -Then, it uses the WriteVal procedure (also used for the sum/average previously) to loop through each SDWORD integer in the array and convert that number
-back into a string manually wihtout Irvine library procedures.  It does this by REPEATEDLY DIVIDING each number by 10 to build back a string from the
-remainder of each division. From this, it uses string primitve instructions to reverse the string, so that it is in the correct order, appending a negative sign to the string if necessary.
+back into a string manually.  It does this by REPEATEDLY DIVIDING each number by 10 to build back a string from the
+remainder of each division. From this, it uses string primitve instructions to reverse the string, so that it is in the correct order, appending a negative sign to the string if a negative flag variable is set.
 
 -It also makes use of two macros to get and display strings to the user, uses data validation to ensure the numbers entered are correct and can fit into a 32 bit register (between -2^31 and 2^31 -1 ).
 
